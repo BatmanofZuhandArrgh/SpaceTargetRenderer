@@ -1,27 +1,31 @@
 blender_exe: /home/anhnguyen/Downloads/blender-3.2.1-linux-x64/blender
-
+blender_engine: BLENDER_EEVEE
 output_dir: ./sample/output/
-
-light:
-
-camera:
+input_blend: 
+WIP_blend_file_path:
 
 background:
   modes: 
     - empty_space
     - empty_space_partial_earth
     - full_earth
-  earth_blend:
-    dir: ./asset/background/earth
-    earth_texture: ./asset/background/sky/earth_texture
-    cloud_texture: ./asset/background/sky/cloud_texture
-    creation_mode: import
+  assets:
+    earth_blend:
+      dir: ./asset/background/earth
+      import_object: Earth
+      import_blend:  ./asset/background/earth/planet_earth.blend
+      earth_texture: ./asset/background/sky/earth_texture
+      cloud_texture: ./asset/background/sky/cloud_texture
+      creation_mode: import
 
-  sky_blend:
-    dir: ./asset/background/sky
-    sky_texture: ./asset/background/sky/sky_texture
-    creation_mode: create
+    sky_blend:
+      dir: ./asset/background/sky
+      sky_texture: ./asset/background/sky/sky_texture
+      creation_mode: create
 
+light:
+
+camera:
 
 space_targets:
   cubesats:
@@ -42,3 +46,8 @@ space_targets:
     included: true
     dir: ./asset/space_targets/other
     textures: ./asset/space_targets/other/textures
+
+operation_config:
+  num_cycle: 1
+  num_iter_per_cycle: 1
+  num_view_per_iter: 2

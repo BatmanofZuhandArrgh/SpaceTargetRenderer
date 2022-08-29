@@ -1,0 +1,52 @@
+Space Target Detection by computer vision
+
+I. Objective: For the purpose of close proximity operations between space objects, such as rendezvous, docking, space debris capturing, and asteroid landing, one object in space must be able to detect, recognize and estimate distance between itself and the target object. We aim to eventually detect all space targets, but for now we would start with the simplest objects, which are cubesats. 
+
+First, we collect and labelled data from the internet, specically images of cubesats and other space targets in space. We hope to build a rendering pipeline that can render images of cubesats in space as close as possible to reality. Then we would develop models trained on the synthesized data and evaluate them on both synthesized and real test set
+
+II. Data collection and labelling real images:
+We hope to collect space images of cubesats first, and then images of all space targets in space.
+
+1. Collection
+* Observation and challenges of the data:
+- The only images we were able to find are images from the space agencies NASA (38 images), JAXA (35), ESA (4). We were also able to cut sequences and extract frames from launch videos and PR videos from NASA and JAXA (9 videos). There is a lack of real images of cubesats, or space targets in general. Therefore we will use all of the real images for testing purposes. 
+- The light source in these images are from the sun and the sunlight reflected from the earth to the cubesats. Since the public images were taken for PR purposes, all of the cubesats images are in really good lighting conditions. This is a disadvantage for us since we're hoping to build a robust detection model in even the hardest lighting conditions.
+- The camera intrinsic and extrinsic values are unknown. Nor are the altitude of the object and distance between the object and the camera.
+- There are a few common types of backgrounds, which are the Pitch black empty space (with light reflecting upon the space targets only), The Earth's sky with varying degree of clouds, and Partial Earth on the background of black empty space, and Parts of the International Space Station on the background of black empty space. Far-away stars' light are too dim to be captured on camera. These conditions will be replicated during the image synthesizing process.
+
+2. Labelling
+- We draw bounding boxes around space entitties using cvats, and label them as follows:
+* Label classes:
+- Cubesats' labels include 1U, 2U, 3U, 4U, 6U, 12U. 
+- Other space targets, which includes parts of space stations, satellites and parts of cubesat-deployers, are labelled other_space_targets (This is for the purpose of future model development where we can extend the scope of the objectives. 
+- Any other objects that are not space entities, satellites, planets and stars, are labelled as other. 
+- Moons, planets and stars, if exist, are considered part of the background, and not labelled.
+
+* Challenges:
+- There are a considerable lack of diversity in the cubesat types captured in the photos. Most are 1Us and 3Us (#TODO insert test set statistics here)  
+- A lot of of cubesats have solar panels as their outside texture. Using these as part of the test set will lead us to not being able to prove the robustness of the model.
+- Some of the sequences collected are of cubesats being rejected from their deployment (tunnel?). The long cubesats will visually look like 1U, 2U, 3U,... as they are ejected from the platform.
+- A lot of cubesats consist of solar panel "wings" which visually makes them look like having more cubes than they actually do.
+- A lot of images have huge solar panels of the ISS as part of the background, which can confuse the model.
+
+III. Data synthesization:
+- We're hoping to synthesize a dataset that resembles realistic conditions the most.
+- For synthesization for computer vision task, people have uses a multitude of tools like openGL, Unreal Engine, Blender, GTA5,... We choose to use Blender for its versatility and Eevee rendering enginer for its real-time speed.
+- According to the (#TODO insert papers and datasets' names), designing a dataset for object detection. Images should contain 5-20 objects (cubesats and others)
+- Unlike other synthetic dataset, we strive to simulate the background, lighting and texture of the objects as best we can. (Other only contains empty-texture cad models of objects and single colored background.
+- Number of images: (#TODO ponder upon this)
+
+* Pipeline: the pipeline uses Blender Python API to render
+The yaml file will prove information to the process of runing the pipeline:
+At the start of every cycle:
+1. The BackgroundGenerator either create the Sky and/or Earth
+2. Setting up the light source and position it
+3. Setting up the camera
+4. At the start of every iteration:
+    a. SpaceTargetGenerator generate Cubesats, Satellites,...
+    At the start of every view:
+    b. Position them and the camera pointing towards them
+    c. Render -> back to b.(For every view), or 4. (For every iteration), or 1. (For every cycle).
+ 
+IV. Domain adaptation
+

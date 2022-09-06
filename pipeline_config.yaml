@@ -25,6 +25,11 @@ background:
       creation_mode: create
 
 light:
+  type: SUN
+  angle: 40
+  strength: 40
+  location: (0,0,16)
+  radius: 1
 
 camera:
 
@@ -54,4 +59,4 @@ space_targets:
 operation_config:
   num_cycle: 1
   num_iter_per_cycle: 1
-  num_view_per_iter: 2
+  num_view_per_iter: 1

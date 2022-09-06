@@ -1,7 +1,9 @@
 import bpy
 
 from math import radians
-from bpy_utils import delete_bpy_object, move_bpy_object, select_bpy_object, select_bpy_object, set_location_bpy_object 
+from bpy_utils import delete_bpy_object, move_bpy_object,\
+     select_bpy_object, select_bpy_object,\
+         set_location_bpy_object, set_rotation_euler_bpy_object 
 
 class CameraGenerator():
     def __init__(self, config_dict) -> None:
@@ -29,8 +31,8 @@ class CameraGenerator():
         bpy.context.scene.camera = camera_object
 
         if mode == 'empty_space':
-            x, y, z = 0, 0, 0
-            rx, ry, rz = 0, 0, 0
+            x, y, z = 7.3589, -6.9258, 4.9583
+            rx, ry, rz = radians(63.6), 0, radians(46.7)
 
         elif mode == 'empty_space_partial_earth':
             #TODO edit general camera positioning
@@ -42,6 +44,7 @@ class CameraGenerator():
             rx, ry, rz = 0, 0, 0
 
         set_location_bpy_object(camera_name, x, y, z)
+        set_rotation_euler_bpy_object(camera_name, rx, ry, rz)
 
     def setup(self, mode, creation_mode):
         self.create_camera(mode, creation_mode)

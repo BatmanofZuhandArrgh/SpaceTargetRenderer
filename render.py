@@ -24,7 +24,6 @@ class RenderPipeline:
         self.blender_exe = config_dict['blender_exe']
         self.blender_engine = config_dict['blender_engine']
         self.output_dir  = config_dict['output_dir']
-        self.input_blend = config_dict['input_blend']
         self.WIP_blend_file_path = config_dict['WIP_blend_file_path']
         
         self.modes = config_dict['modes']
@@ -36,7 +35,7 @@ class RenderPipeline:
         self.background_generator = BackgroundGenerator(self.background_dict)
         self.space_target_generator = SpaceTargetGenerator(self.space_target_dict) 
 
-        self.light_generator = LightGenerator(config_dict)
+        self.light_generator = LightGenerator(config_dict=self.light_config)
         self.camera_generator = CameraGenerator(config_dict= self.camera_config)
 
         self.operational_config = config_dict['operation_config']
@@ -91,7 +90,7 @@ class RenderPipeline:
             for cycle in range(self.operational_config['num_cycle']):
                 #For every cycle, create background, set up light and camera
                 mode =  random.choice(self.modes)   
-                mode = 'empty_space_partial_earth' #TODO Delete this
+                mode = 'empty_space' #_partial_earth' #TODO Delete this
 
                 self.WIP_blend_file_path, creation_mode = self.generate_background(mode)
                 # WIP_blend_file_path might be supplied if background is imported
@@ -118,10 +117,11 @@ class RenderPipeline:
                             img_path = f'{self.output_dir}/c{cycle}_i{iter}_v{view}_{i}.png'
                             bpy.ops.wm.save_mainfile(filepath=blend_file_path)
                             
+                            show_bpy_objects()
                             print(self.camera_generator.get_camera_coordinates())
 
-                            # parameters = [self.blender_exe, '-b', blend_file_path, '-o', img_path,'--engine', self.blender_engine,'-f', '1']
-                            # subprocess.call(parameters)
+                            parameters = [self.blender_exe, '-b', blend_file_path, '-o', img_path,'--engine', self.blender_engine,'-f', '1']
+                            subprocess.call(parameters)
 
 def main():
     pipeline = RenderPipeline()

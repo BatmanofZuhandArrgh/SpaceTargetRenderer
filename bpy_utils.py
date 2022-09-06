@@ -1,3 +1,4 @@
+from dataclasses import field
 import os
 import bpy
 
@@ -8,6 +9,7 @@ def append_bpy_object(blend_filepath, section, object = "Cube"):
     filename  = object
 
     bpy.ops.wm.append(
+        filepath = filepath,
         filename=filename,
         directory=directory)
 
@@ -80,8 +82,24 @@ def set_rotation_euler_bpy_object(object_name, x, y, z):
     obj.rotation_euler = (x, y, z)
 
 def change_background_color(hsva = (0, 0, 0, 1)):
+    #Default is pitch black
     bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value = hsva
 
-def add_light(type):
-    bpy.ops.object.light_add(type=type, radius=1, location=(0, 0, 0))
+def create_image_texture(image_texture_path, mat_name):
+    mat = bpy.data.materials.new(name = mat_name)
+    mat.use_nodes = True
+
+    bsdf = mat.node_tree.nodes["Principled BSDF"]
     
+    texImage = mat.node_tree.nodes.new('ShaderNodeTexImage')
+    texImage.image = bpy.data.images.load(image_texture_path)
+
+    mat.node_tree.links.new(bsdf.inputs['Base Color'], texImage.outputs['Color'])
+    return mat
+
+def add_image_texture(obj, mat):
+    # Assign it to object
+    if obj.data.materials:
+        obj.data.materials[0] = mat
+    else:
+        obj.data.materials.append(mat)

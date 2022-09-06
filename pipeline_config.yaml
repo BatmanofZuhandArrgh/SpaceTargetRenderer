@@ -1,14 +1,14 @@
-blender_exe: /home/anhnguyen/Downloads/blender-3.2.1-linux-x64/blender
+blender_exe: /home/anhnguyen/Downloads/blender-2.82-linux64/blender
 blender_engine: BLENDER_EEVEE
 output_dir: ./sample/output/
-input_blend: 
 WIP_blend_file_path:
 
+modes: 
+  - empty_space
+  - empty_space_partial_earth
+  - full_earth
+
 background:
-  modes: 
-    - empty_space
-    - empty_space_partial_earth
-    - full_earth
   assets:
     earth_blend:
       dir: ./asset/background/earth
@@ -19,7 +19,8 @@ background:
       creation_mode: import
 
     sky_blend:
-      dir: ./asset/background/sky
+      dir: ./asset/background/
+      import_blend:
       sky_texture: ./asset/background/sky/sky_texture
       creation_mode: create
 
@@ -28,22 +29,25 @@ light:
 camera:
 
 space_targets:
+  range_num_obj: (0, 6) 
+
   cubesats:
+    included: True
     1U: ./asset/space_targets/cubesats/cubesat_1U.blend
-    2U: ./asset/space_targets/cubesats/cubesat_2U.blend
-    3U: ./asset/space_targets/cubesats/cubesat_3U.blend
-    4U: ./asset/space_targets/cubesats/cubesat_4U.blend
-    6U: ./asset/space_targets/cubesats/cubesat_6U.blend
-    12U: ./asset/space_targets/cubesats/cubesat_12U.blend 
+    # 2U: ./asset/space_targets/cubesats/cubesat_2U.blend
+    # 3U: ./asset/space_targets/cubesats/cubesat_3U.blend
+    # 4U: ./asset/space_targets/cubesats/cubesat_4U.blend
+    # 6U: ./asset/space_targets/cubesats/cubesat_6U.blend
+    # 12U: ./asset/space_targets/cubesats/cubesat_12U.blend 
     textures: ./asset/space_targets/cubesats/textures
 
   other_st:
-    included: true
+    included: True
     dir: ./asset/space_targets/other_st
     textures: ./asset/space_targets/other_st/textures
 
   other:
-    included: true
+    included: True
     dir: ./asset/space_targets/other
     textures: ./asset/space_targets/other/textures
 

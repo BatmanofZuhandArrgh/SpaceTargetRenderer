@@ -1,31 +1,30 @@
-import random
+import yaml
+
 from pprint import pprint 
 
-from bpy_utils import append_bpy_object
+from bpy_utils import append_bpy_object, change_background_color
 
 class BackgroundGenerator():
     def __init__(self, config_dict) -> None:
-        pprint(config_dict)
-        self.all_modes = config_dict['modes']
-        self.mode = random.choice(self.all_modes)
-
-        ####TODO delete this:
-        self.mode = "empty_space_partial_earth"
-        print(f'Creating a(n) {self.mode} background') 
 
         self.earth_dict = config_dict['assets']['earth_blend']
         self.sky_dict   = config_dict['assets']['sky_blend']   
 
-    def generate(self):
+    def generate(self, mode):
         #TODO paint background black by default, far-away stars' light is too faint to be captured by camera
-        if self.mode == 'empty_space':
-            return
-        elif self.mode == 'empty_space_partial_earth':
+        #Space background color: pitch black
+        change_background_color()
+        
+        print(f'Creating a(n) {mode} background')
+
+        if mode == 'empty_space':
+            return "", 'create'
+        elif mode == 'empty_space_partial_earth':
             creation_mode = self.earth_dict['creation_mode']
-            self.generate_earth(creation_mode)
-        elif self.mode == 'full_earth':
+            return self.generate_earth(creation_mode), creation_mode
+        elif mode == 'full_earth':
             creation_mode = self.sky_dict['creation_mode']
-            self.generate_sky(creation_mode)
+            return self.generate_sky(creation_mode), creation_mode
 
     def generate_sky(self, creation_mode):
         #TODO generate sky
@@ -33,52 +32,43 @@ class BackgroundGenerator():
 
     def generate_earth(self, creation_mode):
         if creation_mode == 'create':
-            self.create_earth()
+            return self.create_earth()
         elif creation_mode == 'import':
-            self.import_earth()
+            # Possibly return WIP blend path
+            return self.import_earth()
 
     def create_earth(self):
         #TODO create 3D earth from scratch if neccessary
         raise NotImplementedError()
 
     def import_earth(self):
-        append_bpy_object(
-            object= self.earth_dict['import_object'],
-            section="Object",
-            blend_filepath=self.earth_dict['import_blend']
-        )
+        '''
+        Output a path to existing input blend file to start from there (Does not actually import separate parts of earth)        
+        '''
+        #Instead of putting earth from existing blend
+        # append_bpy_object(
+            # object= self.earth_dict['import_object'],
+            # section="Object",
+        #     # blend_filepath=self.earth_dict['import_blend']
+        # )
 
+        # We would use the existing blend as the WIP starting blend
+        # Return Earth asset file path as the WIP file_path
+        return self.earth_dict['import_blend']
+        
     def rotate(self):
-
         pass
 
 def main():
-    sample_config_dict = \
-        {
-            'modes': [
-                'empty_space',
-                'empty_space_partial_earth',
-                'full_earth'
-                ], 
-            'assets':
-            {
-                'earth_blend': {
-                    'import_object': "Earth",
-                    'import_blend': "./asset/background/earth/planet_earth.blend",
-                    'dir': './asset/background/earth', 
-                    'earth_texture': './asset/background/sky/earth_texture', 
-                    'cloud_texture': './asset/background/sky/cloud_texture',
-                    'creation_mode': 'import',
-                    }, 
-                'sky_blend': {
-                    'dir': './asset/background/sky', 
-                    'sky_texture': './asset/background/sky/sky_texture',
-                    'creation_mode': 'create',
-                }
-            }
-        }
-    background_gen = BackgroundGenerator(sample_config_dict)
-    background_gen.generate()
+    with open('pipeline_config.yaml', "r") as stream:
+        try:
+            config_dict = yaml.safe_load(stream)
+        except yaml.YAMLError as exc:
+            print(exc)
+    
+    bg_dict = config_dict['background']
+    background_gen = BackgroundGenerator(bg_dict)
+    background_gen.generate('create')
 
 
 if __name__ == '__main__':

@@ -48,12 +48,14 @@ def main():
     output_rendered_file = 'basic_function_testing/test_basic_func.png'
     with tempfile.NamedTemporaryFile() as tmp_file:
         #Create temp filepath to save blend file
-        blend_file_path = tmp_file.name        
+        save_blend_file_path = tmp_file.name        
         
-        create_blend("", blend_file_path)
+        WIP_blend_file_path = '/home/anhnguyen/Documents/SpaceTargetRenderer/asset/background/earth/planet_earth.blend'
+        # WIP_blend_file_path = '/home/anhnguyen/Documents/Blender_Projects/1U_cubesat.blend'
+        create_blend(WIP_blend_file_path, save_blend_file_path)
         render_file(
             executable=blender_executable_path,
-            blend_file = blend_file_path,
+            blend_file = save_blend_file_path,
             output_rendered_file = output_rendered_file,
         )
 

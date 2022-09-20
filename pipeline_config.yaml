@@ -13,9 +13,10 @@ background:
     earth_blend:
       dir: ./asset/background/earth
       import_object: Earth
-      import_blend:  ./asset/background/earth/planet_earth.blend
+      import_blend:  ./asset/background/earth/planet_earth_v2.blend
       earth_texture: ./asset/background/sky/earth_texture
       cloud_texture: ./asset/background/sky/cloud_texture
+      camera_orbiting_range: ()
       creation_mode: import
 
     sky_blend:
@@ -25,16 +26,22 @@ background:
       creation_mode: create
 
 light:
+  specify_config: False
   type: SUN
-  angle: 40
-  strength: 40
-  location: (0,0,16)
+  angle: 360
+  strength: 1000
+  location: (4,1,6)
+  rotation: (0,0,0)
   radius: 1
 
 camera:
+  space_target_range:
+    depth: (-8, -100) #From the axis of the camera
+    horizontal_dist: (2.5, 36)   #Horizontal distance from the axis of the camera
+    vertical_dist: (1, 20)
 
 space_targets:
-  range_num_obj: (0, 6) 
+  range_num_obj: (1,10) 
 
   cubesats:
     included: True
@@ -59,4 +66,4 @@ space_targets:
 operation_config:
   num_cycle: 1
   num_iter_per_cycle: 1
-  num_view_per_iter: 1
+  num_view_per_iter: 4

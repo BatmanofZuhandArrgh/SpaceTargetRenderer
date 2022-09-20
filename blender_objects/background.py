@@ -2,7 +2,7 @@ import yaml
 
 from pprint import pprint 
 
-from bpy_utils import append_bpy_object, change_background_color
+from utils.bpy_utils import append_bpy_object, change_background_color
 
 class BackgroundGenerator():
     def __init__(self, config_dict) -> None:
@@ -11,7 +11,6 @@ class BackgroundGenerator():
         self.sky_dict   = config_dict['assets']['sky_blend']   
 
     def generate(self, mode):
-        #TODO paint background black by default, far-away stars' light is too faint to be captured by camera
         #Space background color: pitch black
         change_background_color()
         

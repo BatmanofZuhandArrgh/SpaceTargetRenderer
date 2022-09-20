@@ -7,7 +7,7 @@ import bpy
 from ast import literal_eval
 from pprint import pprint
 
-from bpy_utils import add_image_texture, append_bpy_object, create_image_texture, show_bpy_objects
+from utils.bpy_utils import add_image_texture, append_bpy_object, create_image_texture, show_bpy_objects
 
 IMG_EXT = ['.jpg', '.jpeg', '.png']
 class SpaceTargetGenerator():
@@ -40,12 +40,10 @@ class SpaceTargetGenerator():
                     self.space_targets[key]['dir'] = self.cubesat_dict[key]
                     self.space_targets[key]['textures'] = [path for path in glob.glob(f'{self.cubesat_dict["textures"]}/**', recursive=True) if '.' + path.split('.')[-1].lower() in IMG_EXT]    
                     self.space_targets[key]['object_name'] = "Cube"
-        pprint(self.space_targets)
 
     def generate(self):
         #By default, pipeline imports the space targets, instead of c
         num_obj = random.randrange(self.range_num_obj[0], self.range_num_obj[1])
-        print(num_obj)
 
         for i in range(num_obj):
             obj_type = random.choice([ key for key in self.space_targets.keys()])
@@ -62,10 +60,9 @@ class SpaceTargetGenerator():
                 )
 
             obj = bpy.data.objects.get(cur_obj_dict['object_name'])
-            obj.name = cur_obj_dict['object_name'] + f'_{i}'
+            obj.name = 'ST_' + obj_type + '_' + cur_obj_dict['object_name'] + f'_{i}'
 
-            show_bpy_objects()
-            add_image_texture(obj, mat=mat)            
+            add_image_texture(obj, mat=mat)
 
 def main():
     with open('pipeline_config.yaml', "r") as stream:

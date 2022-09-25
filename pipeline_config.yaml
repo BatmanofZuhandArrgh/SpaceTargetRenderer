@@ -51,7 +51,7 @@ space_targets:
     # 4U: ./asset/space_targets/cubesats/cubesat_4U.blend
     # 6U: ./asset/space_targets/cubesats/cubesat_6U.blend
     # 12U: ./asset/space_targets/cubesats/cubesat_12U.blend 
-    textures: ./asset/space_targets/cubesats/textures
+    textures: ./asset/space_targets/cubesats/textures/one_side
 
   other_st:
     included: True
@@ -66,4 +66,4 @@ space_targets:
 operation_config:
   num_cycle: 1
   num_iter_per_cycle: 1
-  num_view_per_iter: 4
+  num_view_per_iter: 1

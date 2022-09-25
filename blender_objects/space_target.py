@@ -41,16 +41,22 @@ class SpaceTargetGenerator():
                     self.space_targets[key]['textures'] = [path for path in glob.glob(f'{self.cubesat_dict["textures"]}/**', recursive=True) if '.' + path.split('.')[-1].lower() in IMG_EXT]    
                     self.space_targets[key]['object_name'] = "Cube"
 
+    def stitch_cube_texture(single_side_texture_path, obj_type):
+        pass
+
     def generate(self):
         #By default, pipeline imports the space targets, instead of c
         num_obj = random.randrange(self.range_num_obj[0], self.range_num_obj[1])
 
         for i in range(num_obj):
-            obj_type = random.choice([ key for key in self.space_targets.keys()])
+            obj_type = random.choice([key for key in self.space_targets.keys()])
             
             cur_obj_dict = self.space_targets[obj_type]            
             
-            image_texture_path = random.choice(cur_obj_dict['textures']) 
+            single_side_texture_path = random.choice(cur_obj_dict['textures']) 
+
+            image_texture_path = self.stitch_cube_texture(single_side_texture_path, obj_type)
+
             mat = create_image_texture(image_texture_path, mat_name=f"Material_{i}")
                         
             append_bpy_object(

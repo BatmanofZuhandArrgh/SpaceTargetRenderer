@@ -4,6 +4,13 @@ import matplotlib.pyplot as plt
 
 from math import radians
 
+def matrix_rotate_by_90(a):
+    a.reverse()
+    for i in range(len(a)):
+        for j in range(i): 
+            a[i][j], a[j][i] = a[j][i], a[i][j]
+    return a
+
 def get_random_rotation_offset():
     return radians(random.uniform(0, 180))
 

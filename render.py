@@ -1,9 +1,10 @@
+import os
 import random
-from re import X
 import bpy
 import subprocess
 import tempfile
 import yaml
+import cv2
 
 from math import radians
 
@@ -46,6 +47,11 @@ class RenderPipeline:
 
         #Current number of space target objects
         self.cur_st_objs = None
+        self.st_coords_world = None
+        self.st_coords_cam = None
+        self.st_coords_img = None
+
+        self.intrinsic_mat = None
 
     def generate_background(self, mode):
         # Create background from scratch, or return WIP_blend_import path and creation_mode(import)
@@ -73,14 +79,20 @@ class RenderPipeline:
         Get st coordinates from camera_generator
         and move the curre
         '''
-        coordinates_within_cam_FOV = self.camera_generator.get_st_positions_within_FOV(len(self.cur_st_objs))
+        self.st_coords_cam, self.st_coords_world = self.camera_generator.get_st_positions_within_FOV(len(self.cur_st_objs))
         for i in range(len(self.cur_st_objs)):
             set_location_bpy_object(
                 object_name=self.cur_st_objs[i],
-                x=coordinates_within_cam_FOV[i][0],
-                y=-coordinates_within_cam_FOV[i][1], 
-                z=coordinates_within_cam_FOV[i][2],
+                x=self.st_coords_world[i][0],
+                y=-self.st_coords_world[i][1], #Oy in world and cam are in opposit direction in blender 
+                z=self.st_coords_world[i][2],
             )
+
+        self.intrinsic_mat = self.camera_generator.get_intrinsic_matrix()
+        # self.st_coords_cam = [-np.array(coord) for coord in self.st_coords_cam]
+        print(self.intrinsic_mat)
+        self.st_coords_img = [self.intrinsic_mat.dot(coords[:-1]) for coords in self.st_coords_cam]
+        self.st_coords_img = [((coord/coord[2]).astype(int))[:-1] for coord in self.st_coords_img]
 
     def space_target_rotating(self):
         #Randomly rotating space targets
@@ -128,18 +140,31 @@ class RenderPipeline:
                     for view in range(self.operational_config['num_view_per_iter']):            
                         #For every view, space targets are repositioned and rotates.
                         #Camera rotates by 90
-                        self.space_target_rotating()
+                        # self.space_target_rotating()
                         self.space_target_positioning()  
                         # self.camera_rotating()                      
                         
                         #Render
-                        img_path = f'{self.output_dir}/c{cycle}_i{iter}_v{view}.png'
+                        img_path = f'{self.output_dir}/c{cycle}_i{iter}_v{view}'
                         bpy.ops.wm.save_mainfile(filepath=blend_file_path)
                         
-                        # print('cam coord', self.camera_generator.get_camera_coordinates())
+                        # print(self.camera_generator.get_intrinsic_matrix())
                         # show_bpy_objects()
                         parameters = [self.blender_exe, '-b', blend_file_path, '-o', img_path,'--engine', self.blender_engine,'-f', '1']
                         subprocess.call(parameters)
+
+                        #Test bounding box
+                        img_path = os.path.splitext(img_path)[0] + '0001.png'
+                        cur_img = cv2.imread(img_path)
+
+                        print(img_path)
+                        for i, coord in enumerate(self.st_coords_img):
+                            # print(coord, self.st_coords_cam[i], self.st_coords_world[i])
+                            height, width,_ = cur_img.shape
+                            # print(cur_img.shape[0] - coord[0],cur_img.shape[1] -  coord[1])
+                            # (cur_img.shape[0] - coord[0],cur_img.shape[1] -  coord[1])
+                            cv2.circle(cur_img, (width - coord[0], height - coord[1]), radius=2, color=(0,0, 255), thickness=2)
+                        cv2.imwrite(filename=img_path, img=cur_img)
 
 def main():
     pipeline = RenderPipeline()

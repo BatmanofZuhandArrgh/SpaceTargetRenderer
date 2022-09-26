@@ -1,13 +1,16 @@
+import cv2
 import os
 import yaml
 import random
 import glob
+import numpy as np
 import bpy
 
 from ast import literal_eval
 from pprint import pprint
 
 from utils.bpy_utils import add_image_texture, append_bpy_object, create_image_texture, show_bpy_objects
+from utils.img_utils import stitching_upwrapped_texture
 
 IMG_EXT = ['.jpg', '.jpeg', '.png']
 class SpaceTargetGenerator():
@@ -41,8 +44,30 @@ class SpaceTargetGenerator():
                     self.space_targets[key]['textures'] = [path for path in glob.glob(f'{self.cubesat_dict["textures"]}/**', recursive=True) if '.' + path.split('.')[-1].lower() in IMG_EXT]    
                     self.space_targets[key]['object_name'] = "Cube"
 
-    def stitch_cube_texture(single_side_texture_path, obj_type):
-        pass
+    def stitch_cube_texture(self, single_side_texture_path, obj_type):
+        '''
+        Input a path to an image texture of one side of the cubesat
+        Output a path to an image texture of a cubesat of obj_type, output name {image_name}_{obj_type}.png
+        '''
+        obj_type = obj_type.lower()
+        img_name = os.path.splitext(os.path.basename(single_side_texture_path))[0]
+        out_img_name = img_name + '_' + obj_type
+
+        texture_dir = single_side_texture_path.split('/one_side')[0]
+        
+        out_img_path = os.path.join(texture_dir, out_img_name+'.jpg')
+        
+        if bool(random.getrandbits(1)):
+            #50/50 generate noise   
+            out_img_path = os.path.join(texture_dir, 'random_noise.jpg')          
+            cv2.imwrite(img = np.random.normal(0,255,(1024,1024,3)), filename=out_img_path)
+            return out_img_path
+
+        if os.path.exists(out_img_path):
+            return out_img_path
+        
+        stitching_upwrapped_texture(single_side_texture_path, obj_type, out_img_path)
+        return out_img_path
 
     def generate(self):
         #By default, pipeline imports the space targets, instead of c

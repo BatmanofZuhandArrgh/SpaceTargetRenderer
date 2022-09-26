@@ -4,6 +4,8 @@ import numpy as np
 from ast import literal_eval
 
 from utils.math_utils import get_random_point_on_3dpolygon, get_random_point_on_3dline
+from utils.bpy_utils import get_calibration_matrix_K_from_blender
+
 np.set_printoptions(suppress=True)
 
 from math import radians, cos, sin
@@ -19,12 +21,12 @@ class CameraGenerator():
 
         self.x, self.y, self.z = None, None, None
         self.rx, self.ry, self.rz = None, None, None
+
+        self.focal_length = None
         
         self.extrinsic_matrix = None
         self.intrinsic_matrix = None
-
         self.inv_extrinsic_matrix = None
-        self.inv_intrinsic_matrix = None
 
         self.st_range = config_dict['space_target_range']
         for key in self.st_range.keys():
@@ -49,6 +51,7 @@ class CameraGenerator():
                 self.get_bpy_camera_coordinates()
             
             self.set_extrinsic_matrix()
+            self.set_intrinsic_matrix()
             return
 
         self.delete_existing_cameras()
@@ -75,6 +78,7 @@ class CameraGenerator():
         set_rotation_euler_bpy_object(camera_name, self.rx, self.ry, self.rz)
         
         self.set_extrinsic_matrix()
+        self.set_intrinsic_matrix()
 
     def rotate_by_90(self):
         self.rz += radians(90)
@@ -89,6 +93,7 @@ class CameraGenerator():
         return self.rx, self.ry, self.rz
 
     def set_extrinsic_matrix(self):
+        #Buiding extrinsic matrix
         extrinsic_matrix_rx = np.array([1, 0, 0, 0, cos(self.rx), -sin(self.rx), 0, sin(self.rx), cos(self.rx)]).reshape(3,3)
         extrinsic_matrix_ry = np.array([cos(self.ry), 0, sin(self.ry), 0, 1, 0, -sin(self.ry), 0, cos(self.ry)]).reshape(3,3)
         extrinsic_matrix_rz = np.array([cos(self.rz),-sin(self.rz), 0, sin(self.rz), cos(self.rz), 0, 0, 0, 1]).reshape(3,3)
@@ -105,13 +110,18 @@ class CameraGenerator():
         self.inv_extrinsic_matrix = np.linalg.inv(self.extrinsic_matrix)
         
     def set_intrinsic_matrix(self):
-        pass
+        print('----------------__SETTING INTRINSIC')
+        # self.focal_length = self.get_focal_length()
+        self.intrinsic_matrix = get_calibration_matrix_K_from_blender()
 
     def get_extrinsic_matrix(self):
         return self.extrinsic_matrix
     
     def get_intrinsic_matrix(self):
         return self.intrinsic_matrix
+
+    def get_focal_length(self):
+        return bpy.data.cameras[0].lens
 
     def move_camera(self, x_offset, y_offset, z_offset):
         # By default there should only be 1 camera named "Camera"
@@ -151,7 +161,7 @@ class CameraGenerator():
         points_worldCoord = [self.inv_extrinsic_matrix.dot(np.array(coord)) for coord in points_camCoord]
         points_worldCoord = [coord[:-1].astype(int) for coord in points_worldCoord]
         
-        return points_worldCoord
+        return points_camCoord, points_worldCoord
 
 def main():
     import yaml

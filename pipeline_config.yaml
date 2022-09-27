@@ -36,12 +36,12 @@ light:
 
 camera:
   space_target_range:
-    depth: (-8, -100) #From the axis of the camera
+    depth: (8, 100) #From the axis of the camera
     horizontal_dist: (2.5, 36)   #Horizontal distance from the axis of the camera
     vertical_dist: (1, 20)
 
 space_targets:
-  range_num_obj: (1,2) 
+  range_num_obj: (1,20) 
 
   cubesats:
     included: True
@@ -66,4 +66,4 @@ space_targets:
 operation_config:
   num_cycle: 1
   num_iter_per_cycle: 1
-  num_view_per_iter: 10
+  num_view_per_iter: 20

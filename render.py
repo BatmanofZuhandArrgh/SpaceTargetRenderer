@@ -84,13 +84,12 @@ class RenderPipeline:
             set_location_bpy_object(
                 object_name=self.cur_st_objs[i],
                 x=self.st_coords_world[i][0],
-                y=-self.st_coords_world[i][1], #Oy in world and cam are in opposit direction in blender 
+                y=self.st_coords_world[i][1], 
                 z=self.st_coords_world[i][2],
             )
 
         self.intrinsic_mat = self.camera_generator.get_intrinsic_matrix()
         # self.st_coords_cam = [-np.array(coord) for coord in self.st_coords_cam]
-        print(self.intrinsic_mat)
         self.st_coords_img = [self.intrinsic_mat.dot(coords[:-1]) for coords in self.st_coords_cam]
         self.st_coords_img = [((coord/coord[2]).astype(int))[:-1] for coord in self.st_coords_img]
 
@@ -140,13 +139,16 @@ class RenderPipeline:
                     for view in range(self.operational_config['num_view_per_iter']):            
                         #For every view, space targets are repositioned and rotates.
                         #Camera rotates by 90
-                        # self.space_target_rotating()
+                        self.space_target_rotating()
                         self.space_target_positioning()  
                         # self.camera_rotating()                      
+                        # print(self.camera_generator.get_extrinsic_matrix())
+
                         
                         #Render
                         img_path = f'{self.output_dir}/c{cycle}_i{iter}_v{view}'
                         bpy.ops.wm.save_mainfile(filepath=blend_file_path)
+
                         
                         # print(self.camera_generator.get_intrinsic_matrix())
                         # show_bpy_objects()
@@ -163,8 +165,9 @@ class RenderPipeline:
                             height, width,_ = cur_img.shape
                             # print(cur_img.shape[0] - coord[0],cur_img.shape[1] -  coord[1])
                             # (cur_img.shape[0] - coord[0],cur_img.shape[1] -  coord[1])
-                            cv2.circle(cur_img, (width - coord[0], height - coord[1]), radius=2, color=(0,0, 255), thickness=2)
+                            cv2.circle(cur_img, (coord[0], coord[1]), radius=2, color=(0,0, 255), thickness=2)
                         cv2.imwrite(filename=img_path, img=cur_img)
+                        
 
 def main():
     pipeline = RenderPipeline()

@@ -119,7 +119,7 @@ def count_bpy_object_bysubstring(substring = 'st_'):
     obj_names = get_bpy_objnames()
     return len([name for name in obj_names if substring.lower() in name.lower()]) 
 
-def get_calibration_matrix_K_from_blender(mode='complete'):
+def get_calibration_matrix_K_from_blender(mode='simple'):
     '''
     Get intrinsic matrix
     Source: https://mcarletti.github.io/articles/blenderintrinsicparams/
@@ -176,35 +176,44 @@ def get_calibration_matrix_K_from_blender(mode='complete'):
     
     return K
 
-def get_3x4_RT_matrix_from_blender(cam):
+# Returns camera rotation and translation matrices from Blender.
+# 
+# There are 3 coordinate systems involved:
+#    1. The World coordinates: "world"
+#       - right-handed
+#    2. The Blender camera coordinates: "bcam"
+#       - x is horizontal
+#       - y is up
+#       - right-handed: negative z look-at direction
+#    3. The desired computer vision camera coordinates: "cv"
+#       - x is horizontal
+#       - y is down (to align to the actual pixel coordinates 
+#         used in digital images)
+#       - right-handed: negative z look-at direction
+
+def get_4x4_RT_matrix_from_blender(cam):
     # bcam stands for blender camera
-    R_bcam2cv = np.array(
-        ((1, 0,  0),
-        (0, -1, 0),
-        (0, 0, -1)))
+    R_bcam2cv = np.array([[1, 0, 0], [0, -1, 0], [0, 0, -1]])
 
     # Transpose since the rotation is object rotation, 
     # and we want coordinate rotation
-    # R_world2bcam = cam.rotation_euler.to_matrix().transposed()
-    # T_world2bcam = -1*R_world2bcam @ location
-    #
-    # Use matrix_world instead to account for all constraints
-    location, rotation = cam.matrix_world.decompose()[0:2]
-    R_world2bcam = rotation.to_matrix().transposed()
+    # location, rotation = cam.matrix_world.decompose()[0:2]
+
+    R_world2bcam = cam.rotation_euler.to_matrix().transposed()
+    # Use matrix_world instead to account for all constraints    
+    # R_world2bcam = rotation.to_matrix().transposed()
 
     # Convert camera location to translation vector used in coordinate changes
-    # T_world2bcam = -1*R_world2bcam @ cam.location
-    # Use location from matrix_world to account for constraints:     
-    T_world2bcam = -1*R_world2bcam @ location
-
+    T_world2bcam = -1*R_world2bcam @ cam.location
+    # Use location from matrix_world to account for constraints:
+    
     # Build the coordinate transform matrix from world to computer vision camera
     R_world2cv = R_bcam2cv@R_world2bcam
     T_world2cv = R_bcam2cv@T_world2bcam
+    
+    R_world2cv = np.concatenate((R_world2cv, np.zeros(shape=(1, 3))), axis = 0) #(3*4)
+    T_world2cv = np.concatenate((T_world2cv.reshape(3,1), np.array([[1]])), axis = 0) #(3*1)
 
-    # put into 3x4 matrix
-    RT = Matrix((
-        R_world2cv[0][:] + (T_world2cv[0],),
-        R_world2cv[1][:] + (T_world2cv[1],),
-        R_world2cv[2][:] + (T_world2cv[2],)
-        ))
+    RT = np.concatenate((R_world2cv, T_world2cv), axis = 1)
+
     return RT

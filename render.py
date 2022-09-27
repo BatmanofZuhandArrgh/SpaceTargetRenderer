@@ -9,11 +9,13 @@ import cv2
 from math import radians
 
 from utils.math_utils import * 
-from utils.bpy_utils import append_bpy_object, delete_bpy_object, get_bpy_objnames, get_bpy_objnames_by_substring, random_rotate_bpy_object, show_bpy_objects,\
+from utils.bpy_utils import append_bpy_object, delete_bpy_object, get_bpy_objnames, get_bpy_objnames_by_substring, \
+    random_rotate_bpy_object, show_bpy_objects,\
      delete_bpy_object, delete_bpy_objects_by_name_substring, \
         random_rotate_bpy_object, count_bpy_object_bysubstring,\
             set_location_bpy_object, get_bpy_obj_coord
-from blender_objects.space_target import SpaceTargetGenerator
+
+from blender_objects.space_target import SpaceTargetGenerator, SpaceTarget
 from blender_objects.background import BackgroundGenerator
 from blender_objects.camera import CameraGenerator
 from blender_objects.light import LightGenerator
@@ -46,10 +48,11 @@ class RenderPipeline:
         self.operational_config = config_dict['operation_config']
 
         #Current number of space target objects
-        self.cur_st_objs = None
+        self.cur_st_obj_names = None #Current name of all space targets 
         self.st_coords_world = None
         self.st_coords_cam = None
         self.st_coords_img = None
+        self.cur_st_objs = {} #Current dict of current SpaceTargets
 
         self.intrinsic_mat = None
 
@@ -58,8 +61,22 @@ class RenderPipeline:
         return self.background_generator.generate(mode)
 
     def generate_space_targets(self):
-        #Space targets are mode-ignorant
-        return self.space_target_generator.generate()
+        #Space targets are mode-ignorant        
+        self.space_target_generator.generate()
+        self.cur_st_obj_names = get_bpy_objnames_by_substring('st_')
+        self.init_st_dict()
+
+    def init_st_dict(self):
+        for name in self.cur_st_obj_names:
+            self.cur_st_objs[name] = SpaceTarget(
+                obj_name=name,
+                img_coord=(0,0),
+                cam_coord=(0,0,0),
+                world_coord=(0,0,0)
+            )
+
+    def save_space_targets(self):
+        pass
 
     def light_setup_n_positioning(self, mode, creation_mode):
         self.light_generator.create_light(mode, creation_mode)
@@ -79,10 +96,10 @@ class RenderPipeline:
         Get st coordinates from camera_generator
         and move the curre
         '''
-        self.st_coords_cam, self.st_coords_world = self.camera_generator.get_st_positions_within_FOV(len(self.cur_st_objs))
-        for i in range(len(self.cur_st_objs)):
+        self.st_coords_cam, self.st_coords_world = self.camera_generator.get_st_positions_within_FOV(len(self.cur_st_obj_names))
+        for i in range(len(self.cur_st_obj_names)):
             set_location_bpy_object(
-                object_name=self.cur_st_objs[i],
+                object_name=self.cur_st_obj_names[i],
                 x=self.st_coords_world[i][0],
                 y=self.st_coords_world[i][1], 
                 z=self.st_coords_world[i][2],
@@ -95,8 +112,17 @@ class RenderPipeline:
 
     def space_target_rotating(self):
         #Randomly rotating space targets
-        for obj_name in self.cur_st_objs:
+        for obj_name in self.cur_st_obj_names:
             random_rotate_bpy_object(object_name=obj_name)
+
+    def space_target_updating(self):
+        #Update coords and rotation for every iteration
+        for i in range(len(self.cur_st_obj_names)):
+            self.cur_st_objs[self.cur_st_obj_names[i]].update(
+                world_coord = self.st_coords_world[i], 
+                cam_coord = self.st_coords_cam[i], 
+                img_coord = self.st_coords_img[i]
+            )
         
     def open_WIP_blend(self):
         # Opening WIP blend file path to append objects in 
@@ -134,27 +160,28 @@ class RenderPipeline:
                 for iter in range(self.operational_config['num_iter_per_cycle']):
                     # For every iteration, space targets are generated
                     self.generate_space_targets()
-                    self.cur_st_objs = get_bpy_objnames_by_substring('st_')
 
                     for view in range(self.operational_config['num_view_per_iter']):            
                         #For every view, space targets are repositioned and rotates.
                         #Camera rotates by 90
                         self.space_target_rotating()
                         self.space_target_positioning()  
-                        # self.camera_rotating()                      
-                        # print(self.camera_generator.get_extrinsic_matrix())
+                        self.space_target_updating()
 
-                        
                         #Render
                         img_path = f'{self.output_dir}/c{cycle}_i{iter}_v{view}'
                         bpy.ops.wm.save_mainfile(filepath=blend_file_path)
-
+                        
+                        show_bpy_objects()
+                        for cur_obj in self.cur_st_objs.values():
+                            cur_obj.print_info()
+                        '''
                         
                         # print(self.camera_generator.get_intrinsic_matrix())
                         # show_bpy_objects()
                         parameters = [self.blender_exe, '-b', blend_file_path, '-o', img_path,'--engine', self.blender_engine,'-f', '1']
                         subprocess.call(parameters)
-
+                        
                         #Test bounding box
                         img_path = os.path.splitext(img_path)[0] + '0001.png'
                         cur_img = cv2.imread(img_path)
@@ -162,12 +189,13 @@ class RenderPipeline:
                         print(img_path)
                         for i, coord in enumerate(self.st_coords_img):
                             # print(coord, self.st_coords_cam[i], self.st_coords_world[i])
-                            height, width,_ = cur_img.shape
+                            # height, width,_ = cur_img.shape
                             # print(cur_img.shape[0] - coord[0],cur_img.shape[1] -  coord[1])
                             # (cur_img.shape[0] - coord[0],cur_img.shape[1] -  coord[1])
                             cv2.circle(cur_img, (coord[0], coord[1]), radius=2, color=(0,0, 255), thickness=2)
                         cv2.imwrite(filename=img_path, img=cur_img)
-                        
+                        '''
+                        print('=======================================')
 
 def main():
     pipeline = RenderPipeline()

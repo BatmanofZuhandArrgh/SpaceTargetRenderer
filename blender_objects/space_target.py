@@ -8,9 +8,40 @@ import bpy
 
 from ast import literal_eval
 from pprint import pprint
+from math import sqrt
 
-from utils.bpy_utils import add_image_texture, append_bpy_object, create_image_texture, show_bpy_objects
+from utils.bpy_utils import add_image_texture, append_bpy_object, create_image_texture, get_rotation_euler_bpy_object, \
+    show_bpy_objects, get_location_bpy_object, get_dimensions_bpy_object
 from utils.img_utils import stitching_upwrapped_texture
+
+class SpaceTarget():
+    def __init__(
+        self, obj_name, img_coord, cam_coord, world_coord
+    ):  
+        self.obj_name = obj_name
+        self.img_coord = img_coord
+        self.cam_coord = cam_coord
+        self.world_coord = world_coord
+        self.obj_type = 'cube' if 'cube' in obj_name else ''
+        self.cls_type = obj_name.split('_')[1].lower()
+        self.rotation = (0,0,0)
+        self.location = world_coord
+        self.dimensions = np.array(get_dimensions_bpy_object(obj_name))
+        self.diagonal   = sqrt(self.dimensions[0]**2 + self.dimensions[1]**2 + self.dimensions[2]**2)
+
+    def update(self, world_coord, cam_coord, img_coord):
+        self.img_coord = img_coord
+        self.cam_coord = cam_coord
+        self.world_coord = world_coord
+        self.rotation = np.array(get_rotation_euler_bpy_object(self.obj_name))
+        self.location = world_coord
+
+    def print_info(self):
+        print(f'Name: {self.obj_name}')
+        print('world, cam, img coords: ', self.world_coord, self.cam_coord, self.img_coord)
+        print('rotation, location: ', self.rotation, self.location)
+        print('dimensions: ', self.dimensions)
+        print(self.diagonal)
 
 IMG_EXT = ['.jpg', '.jpeg', '.png']
 class SpaceTargetGenerator():

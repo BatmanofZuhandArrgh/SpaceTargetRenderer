@@ -92,6 +92,22 @@ def set_rotation_euler_bpy_object(object_name, x, y, z):
     obj = bpy.data.objects[object_name]
     obj.rotation_euler = (x, y, z)
 
+def set_dimensions_bpy_object(object_name, x, y, z):
+    obj = bpy.data.objects[object_name]
+    obj.dimensions = (x, y, z)
+
+def get_location_bpy_object(object_name):
+    obj = bpy.data.objects[object_name]
+    return obj.location
+
+def get_rotation_euler_bpy_object(object_name):
+    obj = bpy.data.objects[object_name]
+    return obj.rotation_euler
+
+def get_dimensions_bpy_object(object_name):
+    obj = bpy.data.objects[object_name]
+    return obj.dimensions
+
 def change_background_color(hsva = (0, 0, 0, 1)):
     #Default is pitch black
     bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value = hsva

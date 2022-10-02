@@ -142,7 +142,7 @@ class CameraGenerator():
         
         points_camCoord = [point + [1] for point in points_camCoord]
         points_worldCoord = [self.inv_extrinsic_matrix.dot(np.array(coord)) for coord in points_camCoord]
-        points_worldCoord = [coord[:-1].astype(int) for coord in points_worldCoord]
+        points_worldCoord = [coord[:-1] for coord in points_worldCoord]
         
         return points_camCoord, points_worldCoord
 

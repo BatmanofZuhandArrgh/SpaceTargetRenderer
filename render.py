@@ -7,6 +7,8 @@ import yaml
 import cv2
 
 from math import radians
+from blender_objects.cubesat import CubeSat
+from pprint import pprint
 
 from utils.math_utils import * 
 from utils.bpy_utils import append_bpy_object, delete_bpy_object, get_bpy_objnames, get_bpy_objnames_by_substring, \
@@ -15,7 +17,7 @@ from utils.bpy_utils import append_bpy_object, delete_bpy_object, get_bpy_objnam
         random_rotate_bpy_object, count_bpy_object_bysubstring,\
             set_location_bpy_object, get_bpy_obj_coord
 
-from blender_objects.space_target import SpaceTargetGenerator, SpaceTarget
+from blender_objects.space_target import SpaceTargetGenerator
 from blender_objects.background import BackgroundGenerator
 from blender_objects.camera import CameraGenerator
 from blender_objects.light import LightGenerator
@@ -55,6 +57,7 @@ class RenderPipeline:
         self.cur_st_objs = {} #Current dict of current SpaceTargets
 
         self.intrinsic_mat = None
+        self.extrinsic_mat = None
 
     def generate_background(self, mode):
         # Create background from scratch, or return WIP_blend_import path and creation_mode(import)
@@ -67,22 +70,23 @@ class RenderPipeline:
         self.init_st_dict()
 
     def init_st_dict(self):
+        self.cur_st_objs.clear() #Clear before populating with new objs
         for name in self.cur_st_obj_names:
-            self.cur_st_objs[name] = SpaceTarget(
+            self.cur_st_objs[name] = CubeSat(
                 obj_name=name,
                 img_coord=(0,0),
                 cam_coord=(0,0,0),
                 world_coord=(0,0,0)
             )
 
-    def save_space_targets(self):
-        pass
-
     def light_setup_n_positioning(self, mode, creation_mode):
         self.light_generator.create_light(mode, creation_mode)
 
     def camera_setup_n_positioning(self, mode, creation_mode):
         self.camera_generator.create_camera(mode, creation_mode)
+        self.intrinsic_mat = self.camera_generator.get_intrinsic_matrix()
+        self.extrinsic_mat = self.camera_generator.get_extrinsic_matrix()
+
 
     def camera_positioning(self, position):
         pass
@@ -105,7 +109,6 @@ class RenderPipeline:
                 z=self.st_coords_world[i][2],
             )
 
-        self.intrinsic_mat = self.camera_generator.get_intrinsic_matrix()
         # self.st_coords_cam = [-np.array(coord) for coord in self.st_coords_cam]
         self.st_coords_img = [self.intrinsic_mat.dot(coords[:-1]) for coords in self.st_coords_cam]
         self.st_coords_img = [((coord/coord[2]).astype(int))[:-1] for coord in self.st_coords_img]
@@ -123,6 +126,8 @@ class RenderPipeline:
                 cam_coord = self.st_coords_cam[i], 
                 img_coord = self.st_coords_img[i]
             )
+
+            self.cur_st_objs[self.cur_st_obj_names[i]].update_bbox(self.intrinsic_mat, self.extrinsic_mat)
         
     def open_WIP_blend(self):
         # Opening WIP blend file path to append objects in 
@@ -172,11 +177,9 @@ class RenderPipeline:
                         img_path = f'{self.output_dir}/c{cycle}_i{iter}_v{view}'
                         bpy.ops.wm.save_mainfile(filepath=blend_file_path)
                         
-                        show_bpy_objects()
-                        for cur_obj in self.cur_st_objs.values():
-                            cur_obj.print_info()
-                        '''
-                        
+                        # for cur_obj in self.cur_st_objs.values():
+                        #     cur_obj.print_info()
+                                                
                         # print(self.camera_generator.get_intrinsic_matrix())
                         # show_bpy_objects()
                         parameters = [self.blender_exe, '-b', blend_file_path, '-o', img_path,'--engine', self.blender_engine,'-f', '1']
@@ -186,15 +189,17 @@ class RenderPipeline:
                         img_path = os.path.splitext(img_path)[0] + '0001.png'
                         cur_img = cv2.imread(img_path)
 
-                        print(img_path)
-                        for i, coord in enumerate(self.st_coords_img):
-                            # print(coord, self.st_coords_cam[i], self.st_coords_world[i])
-                            # height, width,_ = cur_img.shape
-                            # print(cur_img.shape[0] - coord[0],cur_img.shape[1] -  coord[1])
-                            # (cur_img.shape[0] - coord[0],cur_img.shape[1] -  coord[1])
-                            cv2.circle(cur_img, (coord[0], coord[1]), radius=2, color=(0,0, 255), thickness=2)
+                        for i, name in enumerate(self.cur_st_obj_names):
+                            center_coord = self.cur_st_objs[name].img_coord     
+                            cv2.circle(cur_img, (center_coord[0], center_coord[1]), radius=2, color=(0,0, 255), thickness=2)
+
+                            # vertices_coords_world = self.cur_st_objs[name].vertices_coords_img
+                            # for vert_coord in vertices_coords_world:
+                            #     cv2.circle(cur_img, (vert_coord[0], vert_coord[1]), radius=2, color=(255,0, 0), thickness=2)
+                            cur_img = cv2.rectangle(cur_img, self.cur_st_objs[name].bbox[0], self.cur_st_objs[name].bbox[1], color =(255,0, 0), thickness = 2)
+
                         cv2.imwrite(filename=img_path, img=cur_img)
-                        '''
+                        
                         print('=======================================')
 
 def main():

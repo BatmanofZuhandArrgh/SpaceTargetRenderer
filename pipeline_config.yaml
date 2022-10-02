@@ -41,7 +41,7 @@ camera:
     vertical_dist: (1, 20)
 
 space_targets:
-  range_num_obj: (1,20) 
+  range_num_obj: (1,6) 
 
   cubesats:
     included: True
@@ -65,5 +65,5 @@ space_targets:
 
 operation_config:
   num_cycle: 1
-  num_iter_per_cycle: 1
-  num_view_per_iter: 20
+  num_iter_per_cycle: 3
+  num_view_per_iter: 3

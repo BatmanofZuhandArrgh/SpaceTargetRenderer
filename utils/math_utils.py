@@ -2,7 +2,7 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 
-from math import radians
+from math import radians, cos, sin 
 
 def matrix_rotate_by_90(a):
     a.reverse()
@@ -13,6 +13,33 @@ def matrix_rotate_by_90(a):
 
 def get_random_rotation_offset():
     return radians(random.uniform(0, 180))
+
+def get_x_rotation_mat(angle):
+    return np.array([
+        [1,0,0],
+        [0, cos(angle), -sin(angle)],
+        [0, sin(angle),  cos(angle)]
+    ])
+
+def get_y_rotation_mat(angle):
+    return np.array([
+        [ cos(angle), 0, sin(angle)],
+        [0, 1, 0],
+        [-sin(angle), 0, cos(angle)]
+    ])
+
+def get_z_rotation_mat(angle):
+    return np.array([
+        [cos(angle), -sin(angle), 0],
+        [sin(angle),  cos(angle), 0],
+        [0,0,1]
+    ])
+
+def get_rotation_mat(x_angle, y_angle, z_angle):
+    x_mat = get_x_rotation_mat(x_angle)
+    y_mat = get_y_rotation_mat(y_angle)
+    z_mat = get_z_rotation_mat(z_angle)
+    return (z_mat.dot(y_mat)).dot(x_mat)
 
 def get_random_point_on_3dpolygon(max_abs_x, max_abs_y, z_coord, num_points):
     '''

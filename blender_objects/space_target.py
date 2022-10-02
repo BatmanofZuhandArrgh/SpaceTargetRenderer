@@ -13,6 +13,7 @@ from math import sqrt
 from utils.bpy_utils import add_image_texture, append_bpy_object, create_image_texture, get_rotation_euler_bpy_object, \
     show_bpy_objects, get_location_bpy_object, get_dimensions_bpy_object
 from utils.img_utils import stitching_upwrapped_texture
+from utils.math_utils import get_rotation_mat
 
 class SpaceTarget():
     def __init__(
@@ -27,27 +28,34 @@ class SpaceTarget():
         self.rotation = (0,0,0)
         self.location = world_coord
         self.dimensions = np.array(get_dimensions_bpy_object(obj_name))
-        self.diagonal   = sqrt(self.dimensions[0]**2 + self.dimensions[1]**2 + self.dimensions[2]**2)
+        # self.diagonal   = sqrt(self.dimensions[0]**2 + self.dimensions[1]**2 + self.dimensions[2]**2)
 
-    def update(self, world_coord, cam_coord, img_coord):
-        self.img_coord = img_coord
-        self.cam_coord = cam_coord
-        self.world_coord = world_coord
+        self.bbox = None #tuple of start point and end point. THose points are tuples of (x_min, y_min), (x_max, y_max)
+
+    def update(self, world_coord = None, cam_coord = None, img_coord = None):
+        '''
+        If new parameters' values are input, spacetarget params are updated.
+        If not and the function is called, only the rotation is updated
+        '''
+        self.img_coord = img_coord if img_coord is not None else self.img_coord
+        self.cam_coord = cam_coord if cam_coord is not None else self.cam_coord
+        self.world_coord = world_coord if world_coord is not None else self.world_coord
         self.rotation = np.array(get_rotation_euler_bpy_object(self.obj_name))
-        self.location = world_coord
+        self.location = self.world_coord
+
+        rotation_mat = get_rotation_mat(self.rotation[0],self.rotation[1], self.rotation[2])
+        self.vertices_coords_world = [self.location + rotation_mat.dot(vert) for vert in self.vertices_coords_world_trivial]
 
     def print_info(self):
         print(f'Name: {self.obj_name}')
         print('world, cam, img coords: ', self.world_coord, self.cam_coord, self.img_coord)
         print('rotation, location: ', self.rotation, self.location)
         print('dimensions: ', self.dimensions)
-        print(self.diagonal)
+        # print('vertices: ', self.vertices_coords_world, self.vertices_coords_img)
 
 IMG_EXT = ['.jpg', '.jpeg', '.png']
 class SpaceTargetGenerator():
     def __init__(self, config_dict) -> None:
-        # pprint(config_dict)
-        
         self.cubesat_dict = config_dict['cubesats']
         self.other_st_dict= config_dict['other_st']
         self.other_dict = config_dict['other']

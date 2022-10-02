@@ -82,7 +82,7 @@ def rotate_bpy_object(object_name, x_offset, y_offset, z_offset):
     obj.rotation_euler.z += z_offset
 
 def random_rotate_bpy_object(object_name):
-    rotate_bpy_object(object_name, get_random_rotation_offset(), get_random_rotation_offset(), get_random_rotation_offset())
+    set_rotation_euler_bpy_object(object_name, get_random_rotation_offset(), get_random_rotation_offset(), get_random_rotation_offset())
 
 def set_location_bpy_object(object_name, x, y, z):
     obj = bpy.data.objects[object_name]

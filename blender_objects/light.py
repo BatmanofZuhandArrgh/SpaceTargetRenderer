@@ -30,6 +30,8 @@ class LightGenerator():
                 self.get_bpy_light_coordinates()
             return
 
+        self.delete_existing_light()   
+
         type = 'SUN'
         angle = 40
         strength = 40 

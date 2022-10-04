@@ -12,7 +12,7 @@ from math import radians, cos, sin
 from utils.bpy_utils import delete_bpy_object, move_bpy_object,\
      select_bpy_object, select_bpy_object,\
          set_location_bpy_object, set_rotation_euler_bpy_object,\
-            rotate_bpy_object
+            rotate_bpy_object, get_bpy_camera_coordinates
 
 class CameraGenerator():
     def __init__(self, config_dict) -> None:
@@ -46,7 +46,7 @@ class CameraGenerator():
         if creation_mode == "import":
             #Assuming the WIP blenderscene has already got a well setup camera, named "Camera"
             self.x, self.y, self.z, self.rx, self.ry, self.rz = \
-                self.get_bpy_camera_coordinates()
+                get_bpy_camera_coordinates()
             
             self.set_extrinsic_matrix()
             self.set_intrinsic_matrix()
@@ -109,12 +109,6 @@ class CameraGenerator():
     def move_camera(self, x_offset, y_offset, z_offset):
         # By default there should only be 1 camera named "Camera"
         move_bpy_object("Camera", x_offset, y_offset, z_offset)
-    
-    def get_bpy_camera_coordinates(self):
-        #Get location and rotation from bpy camera object, when not set by CamGen
-        camera = bpy.context.scene.camera
-        return camera.location.x, camera.location.y, camera.location.z, \
-            camera.rotation_euler.x, camera.rotation_euler.y, camera.rotation_euler.z
     
     def get_camera_coordinates(self):
         return self.get_cam_location() + self.get_cam_rotation() 

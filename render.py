@@ -12,7 +12,7 @@ from pprint import pprint
 
 from utils.math_utils import * 
 from utils.bpy_utils import append_bpy_object, delete_bpy_object, get_bpy_objnames, get_bpy_objnames_by_substring, \
-    random_rotate_bpy_object, show_bpy_objects,\
+    random_rotate_bpy_object, reset_blend, show_bpy_objects,\
      delete_bpy_object, delete_bpy_objects_by_name_substring, \
         random_rotate_bpy_object, count_bpy_object_bysubstring,\
             set_location_bpy_object, get_bpy_obj_coord
@@ -87,7 +87,6 @@ class RenderPipeline:
         self.intrinsic_mat = self.camera_generator.get_intrinsic_matrix()
         self.extrinsic_mat = self.camera_generator.get_extrinsic_matrix()
 
-
     def camera_positioning(self, position):
         pass
 
@@ -129,34 +128,34 @@ class RenderPipeline:
 
             self.cur_st_objs[self.cur_st_obj_names[i]].update_bbox(self.intrinsic_mat, self.extrinsic_mat)
         
-    def open_WIP_blend(self):
-        # Opening WIP blend file path to append objects in 
-        if self.WIP_blend_file_path not in [None, ""]:
-            bpy.ops.wm.open_mainfile(filepath=self.WIP_blend_file_path)     
-
     def delete_all_space_targets(self):
         delete_bpy_objects_by_name_substring('st_')             
         delete_bpy_objects_by_name_substring('cube')
-        pass  
+        pass
     
-    def work_on_existing_blend(self):
-        self.open_WIP_blend()
+    def init_blend(self):     
+        # Opening WIP blend file path to append objects, if not start new one 
+        if self.WIP_blend_file_path not in [None, ""]:
+            bpy.ops.wm.open_mainfile(filepath=self.WIP_blend_file_path)             
+        else:
+            bpy.ops.wm.read_homefile(use_empty=True)
+
         self.delete_all_space_targets()
 
     def render(self):
-        #https://docs.blender.org/manual/en/latest/advanced/command_line/render.html
-        #Create temp filepath to save blend file
-        with tempfile.NamedTemporaryFile() as tmp_file:
-            blend_file_path = tmp_file.name   
-            
-            for cycle in range(self.operational_config['num_cycle']):
-                #For every cycle, create background, set up light and camera
-                mode =  random.choice(self.modes)   
-                mode = 'empty_space' #_partial_earth' #_partial_earth' #TODO Delete this
+        #https://docs.blender.org/manual/en/latest/advanced/command_line/render.html            
+        for cycle in range(self.operational_config['num_cycle']):
+            #For every cycle, create background, set up light and camera
+            mode =  random.choice(self.modes)   
+            # mode = 'empty_space' #_partial_earth' #_partial_earth' #TODO Delete this
+
+            #Create temp filepath to save blend file
+            with tempfile.NamedTemporaryFile() as tmp_file:
+                blend_file_path = tmp_file.name   
 
                 self.WIP_blend_file_path, creation_mode = self.generate_background(mode)
                 # WIP_blend_file_path might be supplied if background is imported
-                self.work_on_existing_blend()
+                self.init_blend()
 
                 self.light_setup_n_positioning(mode, creation_mode)
 
@@ -177,11 +176,6 @@ class RenderPipeline:
                         img_path = f'{self.output_dir}/c{cycle}_i{iter}_v{view}'
                         bpy.ops.wm.save_mainfile(filepath=blend_file_path)
                         
-                        # for cur_obj in self.cur_st_objs.values():
-                        #     cur_obj.print_info()
-                                                
-                        # print(self.camera_generator.get_intrinsic_matrix())
-                        # show_bpy_objects()
                         parameters = [self.blender_exe, '-b', blend_file_path, '-o', img_path,'--engine', self.blender_engine,'-f', '1']
                         subprocess.call(parameters)
                         
@@ -189,19 +183,16 @@ class RenderPipeline:
                         img_path = os.path.splitext(img_path)[0] + '0001.png'
                         cur_img = cv2.imread(img_path)
 
-                        for i, name in enumerate(self.cur_st_obj_names):
+                        for name in self.cur_st_obj_names:
                             center_coord = self.cur_st_objs[name].img_coord     
                             cv2.circle(cur_img, (center_coord[0], center_coord[1]), radius=2, color=(0,0, 255), thickness=2)
-
-                            # vertices_coords_world = self.cur_st_objs[name].vertices_coords_img
-                            # for vert_coord in vertices_coords_world:
-                            #     cv2.circle(cur_img, (vert_coord[0], vert_coord[1]), radius=2, color=(255,0, 0), thickness=2)
                             cur_img = cv2.rectangle(cur_img, self.cur_st_objs[name].bbox[0], self.cur_st_objs[name].bbox[1], color =(255,0, 0), thickness = 2)
 
                         cv2.imwrite(filename=img_path, img=cur_img)
                         
                         print('=======================================')
 
+                self.WIP_blend_file_path = "" #Reset TODO Refactor
 def main():
     pipeline = RenderPipeline()
 

@@ -2,7 +2,7 @@ import bpy
 from math import radians
 from ast import literal_eval
 
-from utils.bpy_utils import delete_bpy_object, set_location_bpy_object, set_rotation_euler_bpy_object
+from utils.bpy_utils import delete_bpy_object, set_location_bpy_object, set_rotation_euler_bpy_object, get_bpy_sun_coordinates
 
 class LightGenerator():
     def __init__(self, config_dict) -> None:
@@ -27,7 +27,7 @@ class LightGenerator():
         '''
         if creation_mode == 'import':
             self.x, self.y, self.z, self.rx, self.ry, self.rz = \
-                self.get_bpy_light_coordinates()
+                get_bpy_sun_coordinates()
             return
 
         self.delete_existing_light()   

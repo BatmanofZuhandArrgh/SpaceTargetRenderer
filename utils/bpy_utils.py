@@ -52,6 +52,19 @@ def get_bpy_objnames():
     obj_names = [obj.name for obj in objs]
     return obj_names
 
+def get_bpy_sun_coordinates():
+    #Get location and rotation from bpy light(sun) object, when not set by CamGen
+    light = bpy.data.objects['Sun']
+    return light.location.x, light.location.y, light.location.z, \
+        light.rotation_euler.x, light.rotation_euler.y, light.rotation_euler.z
+
+def get_bpy_camera_coordinates():
+    #Get location and rotation from bpy camera object, when not set by CamGen
+    camera = bpy.context.scene.camera
+    return camera.location.x, camera.location.y, camera.location.z, \
+        camera.rotation_euler.x, camera.rotation_euler.y, camera.rotation_euler.z
+
+
 def get_bpy_objnames_by_substring(substring):
     return [name for name in get_bpy_objnames() if substring.lower() in name.lower()]
 

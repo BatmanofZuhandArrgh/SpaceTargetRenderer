@@ -6,14 +6,14 @@ WIP_blend_file_path:
 modes: 
   - empty_space
   - empty_space_partial_earth
-  - full_earth
+  # - full_earth
 
 background:
   assets:
     earth_blend:
       dir: ./asset/background/earth
       import_object: Earth
-      import_blend:  ./asset/background/earth/planet_earth_v2.blend
+      import_blend:  ./asset/background/earth/planet_earth_v1.blend
       earth_texture: ./asset/background/sky/earth_texture
       cloud_texture: ./asset/background/sky/cloud_texture
       camera_orbiting_range: ()
@@ -64,6 +64,6 @@ space_targets:
     textures: ./asset/space_targets/other/textures
 
 operation_config:
-  num_cycle: 1
-  num_iter_per_cycle: 3
-  num_view_per_iter: 3
+  num_cycle: 4
+  num_iter_per_cycle: 1
+  num_view_per_iter: 1

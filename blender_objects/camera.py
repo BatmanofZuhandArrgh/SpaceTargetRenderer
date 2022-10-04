@@ -5,6 +5,7 @@ from ast import literal_eval
 
 from utils.math_utils import get_random_point_on_3dpolygon, get_random_point_on_3dline
 from utils.bpy_utils import get_calibration_matrix_K_from_blender, get_4x4_RT_matrix_from_blender, show_bpy_objects
+from utils.utils import get_yaml
 
 np.set_printoptions(suppress=True)
 
@@ -142,12 +143,7 @@ class CameraGenerator():
 
 def main():
     import yaml
-    config_path = './pipeline_config.yaml'
-    with open(config_path, "r") as stream:
-        try:
-            config_dict = yaml.safe_load(stream)
-        except yaml.YAMLError as exc:
-            print(exc)
+    config_dict = get_yaml('./pipeline_config.yaml')
 
     cam_gen = CameraGenerator(config_dict=config_dict['camera'])
     cam_gen.create_camera(mode='empty_space')

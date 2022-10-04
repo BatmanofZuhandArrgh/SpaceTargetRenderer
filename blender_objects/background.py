@@ -3,6 +3,7 @@ import yaml
 from pprint import pprint 
 
 from utils.bpy_utils import append_bpy_object, change_background_color
+from utils.utils import get_yaml
 
 class BackgroundGenerator():
     def __init__(self, config_dict) -> None:
@@ -11,9 +12,6 @@ class BackgroundGenerator():
         self.sky_dict   = config_dict['assets']['sky_blend']   
 
     def generate(self, mode):
-        #Space background color: pitch black
-        change_background_color()
-        
         print(f'Creating a(n) {mode} background')
 
         if mode == 'empty_space':
@@ -59,11 +57,7 @@ class BackgroundGenerator():
         pass
 
 def main():
-    with open('pipeline_config.yaml', "r") as stream:
-        try:
-            config_dict = yaml.safe_load(stream)
-        except yaml.YAMLError as exc:
-            print(exc)
+    config_dict = get_yaml('pipeline_config.yaml')
     
     bg_dict = config_dict['background']
     background_gen = BackgroundGenerator(bg_dict)

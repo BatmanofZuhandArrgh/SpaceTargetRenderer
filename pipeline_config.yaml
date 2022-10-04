@@ -1,7 +1,10 @@
 blender_exe: /home/anhnguyen/Downloads/blender-2.82-linux64/blender
 blender_engine: BLENDER_EEVEE
 output_dir: ./sample/output/
+label_dict: ./annotation/OBJ_CLS.yaml
 WIP_blend_file_path:
+
+img_size: (640,480)
 
 modes: 
   - empty_space

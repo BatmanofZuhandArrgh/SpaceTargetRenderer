@@ -14,6 +14,7 @@ from utils.bpy_utils import add_image_texture, append_bpy_object, create_image_t
     show_bpy_objects, get_location_bpy_object, get_dimensions_bpy_object
 from utils.img_utils import stitching_upwrapped_texture
 from utils.math_utils import get_rotation_mat
+from utils.utils import get_yaml
 
 class SpaceTarget():
     def __init__(
@@ -135,12 +136,7 @@ class SpaceTargetGenerator():
             add_image_texture(obj, mat=mat)
 
 def main():
-    with open('pipeline_config.yaml', "r") as stream:
-            try:
-                config_dict = yaml.safe_load(stream)
-            except yaml.YAMLError as exc:
-                print(exc)
-
+    config_dict = get_yaml('pipeline_config.yaml')
     st_dict = config_dict['space_targets']
     space_target_generator = SpaceTargetGenerator(st_dict)
     space_target_generator.generate()

@@ -4,6 +4,15 @@ import bpy
 
 from math_utils import get_random_rotation_offset
 
+def set_render_img_size(img_size: tuple):
+    r = bpy.context.scene.render
+    r.resolution_x = img_size[0]
+    r.resolution_y = img_size[1]
+
+def get_render_img_size():
+    r = bpy.context.scene.render
+    return (r.resolution_x, r.resolution_y)
+
 def append_bpy_object(blend_filepath, section, object = "Cube"):
 
     filepath  = os.path.join(blend_filepath, section, object)

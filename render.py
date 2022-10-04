@@ -1,3 +1,4 @@
+from ast import literal_eval
 import os
 import random
 import bpy
@@ -10,12 +11,13 @@ from math import radians
 from blender_objects.cubesat import CubeSat
 from pprint import pprint
 
+from utils.utils import get_yaml
 from utils.math_utils import * 
 from utils.bpy_utils import append_bpy_object, delete_bpy_object, get_bpy_objnames, get_bpy_objnames_by_substring, \
-    random_rotate_bpy_object, reset_blend, show_bpy_objects,\
+    random_rotate_bpy_object, show_bpy_objects,\
      delete_bpy_object, delete_bpy_objects_by_name_substring, \
         random_rotate_bpy_object, count_bpy_object_bysubstring,\
-            set_location_bpy_object, get_bpy_obj_coord
+            set_location_bpy_object, get_bpy_obj_coord, set_render_img_size
 
 from blender_objects.space_target import SpaceTargetGenerator
 from blender_objects.background import BackgroundGenerator
@@ -24,11 +26,7 @@ from blender_objects.light import LightGenerator
 
 class RenderPipeline:
     def __init__(self, config_path = 'pipeline_config.yaml'):
-        with open(config_path, "r") as stream:
-            try:
-                config_dict = yaml.safe_load(stream)
-            except yaml.YAMLError as exc:
-                print(exc)
+        config_dict = get_yaml(config_path)
 
         self.blender_exe = config_dict['blender_exe']
         self.blender_engine = config_dict['blender_engine']
@@ -40,6 +38,9 @@ class RenderPipeline:
         self.camera_config = config_dict['camera']
         self.background_dict = config_dict['background']
         self.space_target_dict = config_dict['space_targets']
+        self.label_dict = get_yaml(config_dict['label_dict'])
+
+        self.img_size = literal_eval(config_dict['img_size'])
 
         self.background_generator = BackgroundGenerator(self.background_dict)
         self.space_target_generator = SpaceTargetGenerator(self.space_target_dict) 
@@ -141,6 +142,7 @@ class RenderPipeline:
             bpy.ops.wm.read_homefile(use_empty=True)
 
         self.delete_all_space_targets()
+        set_render_img_size(self.img_size)
 
     def render(self):
         #https://docs.blender.org/manual/en/latest/advanced/command_line/render.html            
@@ -172,24 +174,42 @@ class RenderPipeline:
                         self.space_target_positioning()  
                         self.space_target_updating()
 
-                        #Render
-                        img_path = f'{self.output_dir}/c{cycle}_i{iter}_v{view}'
+                        #Render                         
+                        img_path = os.path.join(self.output_dir,f'c{cycle}_i{iter}_v{view}')
                         bpy.ops.wm.save_mainfile(filepath=blend_file_path)
                         
                         parameters = [self.blender_exe, '-b', blend_file_path, '-o', img_path,'--engine', self.blender_engine,'-f', '1']
                         subprocess.call(parameters)
                         
-                        #Test bounding box
+                        #Draw bounding box
                         img_path = os.path.splitext(img_path)[0] + '0001.png'
                         cur_img = cv2.imread(img_path)
-
+                        labels = []
                         for name in self.cur_st_obj_names:
-                            center_coord = self.cur_st_objs[name].img_coord     
-                            cv2.circle(cur_img, (center_coord[0], center_coord[1]), radius=2, color=(0,0, 255), thickness=2)
+                            center_coord = self.cur_st_objs[name].img_coord
+                            bbox_width = self.cur_st_objs[name].bbox[1][0] - self.cur_st_objs[name].bbox[0][0]
+                            bbox_height = self.cur_st_objs[name].bbox[1][1] - self.cur_st_objs[name].bbox[0][1]
+
+                            # cv2.circle(cur_img, (center_coord[0], center_coord[1]), radius=2, color=(0,0, 255), thickness=2)
                             cur_img = cv2.rectangle(cur_img, self.cur_st_objs[name].bbox[0], self.cur_st_objs[name].bbox[1], color =(255,0, 0), thickness = 2)
+                            label = [
+                                str(self.label_dict[self.cur_st_objs[name].cls_type]), 
+                                str(round(center_coord[0]/self.img_size[0], 2)), 
+                                str(round(center_coord[1]/self.img_size[1], 2)), 
+                                str(round(bbox_width/self.img_size[0], 2)),
+                                str(round(bbox_height/self.img_size[1], 2))
+                            ]
+                            labels.append(' '.join(label))
 
                         cv2.imwrite(filename=img_path, img=cur_img)
                         
+                        #Output text
+                        txt_name = os.path.splitext(os.path.basename(img_path))[0] + '.txt'
+                        txt_path = os.path.join(self.output_dir, txt_name)
+
+                        with open(txt_path, 'w') as f:
+                            f.write('\n'.join(labels))
+
                         print('=======================================')
 
                 self.WIP_blend_file_path = "" #Reset TODO Refactor

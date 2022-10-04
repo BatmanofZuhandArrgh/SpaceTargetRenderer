@@ -1,5 +1,5 @@
 # image sets
-sample/output/*
+sample/*
 asset/
 
 # Byte-compiled / optimized / DLL files

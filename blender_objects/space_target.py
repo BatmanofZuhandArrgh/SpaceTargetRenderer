@@ -10,10 +10,9 @@ from ast import literal_eval
 from pprint import pprint
 from math import sqrt
 
-from utils.bpy_utils import add_image_texture, append_bpy_object, create_image_texture, get_rotation_euler_bpy_object, \
+from utils.bpy_utils import add_image_texture, append_bpy_object, create_image_texture, get_bpy_objnames, get_rotation_euler_bpy_object, \
     show_bpy_objects, get_location_bpy_object, get_dimensions_bpy_object
 from utils.img_utils import stitching_upwrapped_texture
-from utils.math_utils import get_rotation_mat
 from utils.utils import get_yaml
 
 class SpaceTarget():
@@ -24,8 +23,8 @@ class SpaceTarget():
         self.img_coord = img_coord
         self.cam_coord = cam_coord
         self.world_coord = world_coord
-        self.obj_type = 'cube' if 'cube' in obj_name else ''
-        self.cls_type = obj_name.split('_')[1].lower()
+        self.obj_type = 'cubesat' if '_CubeSat' in obj_name else 'other_st'
+        self.cls_type = obj_name.split('_')[2].lower() if self.obj_type == 'cubesat' else 'other_st'
         self.rotation = (0,0,0)
         self.location = world_coord
         self.dimensions = np.array(get_dimensions_bpy_object(obj_name))
@@ -44,9 +43,6 @@ class SpaceTarget():
         self.rotation = np.array(get_rotation_euler_bpy_object(self.obj_name))
         self.location = self.world_coord
 
-        rotation_mat = get_rotation_mat(self.rotation[0],self.rotation[1], self.rotation[2])
-        self.vertices_coords_world = [self.location + rotation_mat.dot(vert) for vert in self.vertices_coords_world_trivial]
-
     def print_info(self):
         print(f'Name: {self.obj_name}')
         print('world, cam, img coords: ', self.world_coord, self.cam_coord, self.img_coord)
@@ -62,19 +58,17 @@ class SpaceTargetGenerator():
         self.other_dict = config_dict['other']
         self.range_num_obj = literal_eval(config_dict['range_num_obj'])
     
-        self.space_targets_included = [st for st in config_dict.keys() if type(config_dict[st]) == dict and config_dict[st]['included']]
-
         #Creating dictionaries of other space targets and their textures
         self.space_targets = {}    
         for dictionary in [self.other_dict, self.other_st_dict]:
             if dictionary['included']:
-                blend_paths = [path for path in glob.glob(f'{dictionary["dir"]}/**', recursive = True) if '.blend' in path]
+                blend_paths = [path for path in glob.glob(f'{dictionary["dir"]}/**', recursive = True) if path.split('.')[-1] == 'blend' ]
                 blend_names = [os.path.splitext(os.path.basename(path))[0] for path in blend_paths]
                 for i, blend_name in enumerate(blend_names):
                     self.space_targets[blend_name] = {}
                     self.space_targets[blend_name]['dir'] = blend_paths[i]
-                    self.space_targets[blend_name]['textures'] = [path for path in glob.glob(f'{dictionary["textures"]}/{blend_name}/**', recursive=True) if '.' + path.split('.')[-1].lower() in IMG_EXT]                    
-                    self.space_targets[blend_name]['object_name'] = 'SpaceTarget'
+                    self.space_targets[blend_name]['textures'] = [path for path in glob.glob(f'{dictionary["textures"]}/**', recursive=True) if '.' + path.split('.')[-1].lower() in IMG_EXT]                    
+                    self.space_targets[blend_name]['object_name'] = 'Other_ST'
 
         if self.cubesat_dict['included']:
             for key in self.cubesat_dict:
@@ -83,7 +77,7 @@ class SpaceTargetGenerator():
                     self.space_targets[key]['dir'] = self.cubesat_dict[key]
                     self.space_targets[key]['textures'] = [path for path in glob.glob(f'{self.cubesat_dict["textures"]}/**', recursive=True) if '.' + path.split('.')[-1].lower() in IMG_EXT]    
                     self.space_targets[key]['object_name'] = "Cube"
-
+        # pprint(self.space_targets)
     def stitch_cube_texture(self, single_side_texture_path, obj_type):
         '''
         Input a path to an image texture of one side of the cubesat
@@ -107,7 +101,7 @@ class SpaceTargetGenerator():
             return out_img_path
         
         stitching_upwrapped_texture(single_side_texture_path, obj_type, out_img_path)
-        return out_img_path
+        return out_img_path        
 
     def generate(self):
         #By default, pipeline imports the space targets, instead of c
@@ -115,23 +109,26 @@ class SpaceTargetGenerator():
 
         for i in range(num_obj):
             obj_type = random.choice([key for key in self.space_targets.keys()])
-            
             cur_obj_dict = self.space_targets[obj_type]            
+
+            if cur_obj_dict['object_name'] == "Cube":
+                single_side_texture_path = random.choice(cur_obj_dict['textures']) 
+                image_texture_path = self.stitch_cube_texture(single_side_texture_path, obj_type)
+                obj_type = 'CubeSat_' + obj_type
+            elif cur_obj_dict['object_name'] == "Other_ST":
+                image_texture_path = random.choice(cur_obj_dict['textures'])
+                obj_type = 'OtherST_' + obj_type
             
-            single_side_texture_path = random.choice(cur_obj_dict['textures']) 
-
-            image_texture_path = self.stitch_cube_texture(single_side_texture_path, obj_type)
-
             mat = create_image_texture(image_texture_path, mat_name=f"Material_{i}")
-                        
-            append_bpy_object(
+
+            object_name = append_bpy_object(
                 blend_filepath=cur_obj_dict['dir'], 
                 section='Object',
                 object=cur_obj_dict['object_name']
                 )
 
-            obj = bpy.data.objects.get(cur_obj_dict['object_name'])
-            obj.name = 'ST_' + obj_type + '_' + cur_obj_dict['object_name'] + f'_{i}'
+            obj = bpy.data.objects.get(object_name)
+            obj.name = 'ST_' + obj_type + '_' + object_name + f'_{i}'
 
             add_image_texture(obj, mat=mat)
 

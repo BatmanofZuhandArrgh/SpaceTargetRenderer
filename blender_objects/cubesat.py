@@ -1,6 +1,8 @@
 import math
 import numpy as np
+
 from space_target import SpaceTarget
+from utils.math_utils import get_rotation_mat
 
 class CubeSat(SpaceTarget):
     def __init__(self, obj_name, img_coord, cam_coord, world_coord):
@@ -24,6 +26,11 @@ class CubeSat(SpaceTarget):
         self.vertices_coords_world_trivial = [ver* world_abs_vertex_coord for ver in world_vertix_multiplier] #world coords of vertices when it's trivial
         self.vertices_coords_world = None #world coords of vertices when taken into account rotation and translation in rendering (after self.update())
         self.vertices_coords_img   = None #img coords of vertices when transformed with camera matrices (after self.update_vertices())
+
+    def update(self, world_coord = None, cam_coord = None, img_coord = None):
+        super().update(world_coord, cam_coord, img_coord)
+        rotation_mat = get_rotation_mat(self.rotation[0],self.rotation[1], self.rotation[2])
+        self.vertices_coords_world = [self.location + rotation_mat.dot(vert) for vert in self.vertices_coords_world_trivial]
 
     def update_vertices(self, cam_intrinsic_mat, cam_extrinsic_mat):
         vert_coords_world = [np.concatenate((ver, np.array([1])), axis = 0) for ver in self.vertices_coords_world]

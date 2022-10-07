@@ -10,6 +10,7 @@ import cv2
 from math import radians
 from blender_objects.cubesat import CubeSat
 from pprint import pprint
+from blender_objects.other_ST import Other_ST
 
 from utils.utils import get_yaml
 from utils.math_utils import * 
@@ -73,12 +74,24 @@ class RenderPipeline:
     def init_st_dict(self):
         self.cur_st_objs.clear() #Clear before populating with new objs
         for name in self.cur_st_obj_names:
-            self.cur_st_objs[name] = CubeSat(
-                obj_name=name,
-                img_coord=(0,0),
-                cam_coord=(0,0,0),
-                world_coord=(0,0,0)
-            )
+
+            print(name)
+            if 'CubeSat' in name:
+                self.cur_st_objs[name] = CubeSat(
+                    obj_name=name,
+                    img_coord=(0,0),
+                    cam_coord=(0,0,0),
+                    world_coord=(0,0,0)
+                )
+
+            elif 'OtherST' in name:
+                self.cur_st_objs[name] = Other_ST(
+                    obj_name=name,
+                    img_coord=(0,0),
+                    cam_coord=(0,0,0),
+                    world_coord=(0,0,0)
+                )
+
 
     def light_setup_n_positioning(self, mode, creation_mode):
         self.light_generator.create_light(mode, creation_mode)
@@ -190,7 +203,7 @@ class RenderPipeline:
                             bbox_width = self.cur_st_objs[name].bbox[1][0] - self.cur_st_objs[name].bbox[0][0]
                             bbox_height = self.cur_st_objs[name].bbox[1][1] - self.cur_st_objs[name].bbox[0][1]
 
-                            # cv2.circle(cur_img, (center_coord[0], center_coord[1]), radius=2, color=(0,0, 255), thickness=2)
+                            cv2.circle(cur_img, (center_coord[0], center_coord[1]), radius=2, color=(0,0, 255), thickness=2)
                             cur_img = cv2.rectangle(cur_img, self.cur_st_objs[name].bbox[0], self.cur_st_objs[name].bbox[1], color =(255,0, 0), thickness = 2)
                             label = [
                                 str(self.label_dict[self.cur_st_objs[name].cls_type]), 

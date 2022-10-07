@@ -1,6 +1,9 @@
 import os
+import random
 import numpy as np
 import bpy
+
+from glob import glob
 
 from math_utils import get_random_rotation_offset
 
@@ -14,15 +17,29 @@ def get_render_img_size():
     return (r.resolution_x, r.resolution_y)
 
 def append_bpy_object(blend_filepath, section, object = "Cube"):
+    if object == "Cube":
+        filepath  = os.path.join(blend_filepath, section, object)
+        directory = os.path.join(blend_filepath, section)
 
-    filepath  = os.path.join(blend_filepath, section, object)
-    directory = os.path.join(blend_filepath, section)
-    filename  = object
+    elif object == 'Other_ST':
+        directory = os.path.join(blend_filepath, section)
 
+        object_names = get_bpy_mesh_from_blend(blend_filepath)
+        object = random.choice(object_names)
+            
+        filepath  = os.path.join(blend_filepath, section, object)
+    
+    #Only append 1 mesh 
     bpy.ops.wm.append(
         filepath = filepath,
-        filename=filename,
+        filename=object,
         directory=directory)
+    
+    return object
+
+def get_bpy_mesh_from_blend(blend_filepath):
+    with bpy.data.libraries.load(blend_filepath) as (data_from, data_to):
+        return data_from.meshes
 
 def show_bpy_objects(print_them = True):
     objs = list(bpy.data.objects)

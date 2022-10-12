@@ -1,15 +1,17 @@
-import yaml
+import os
+import random
 
 from pprint import pprint 
 
-from utils.bpy_utils import append_bpy_object, change_background_color
+from utils.bpy_utils import replace_img_texture, random_rotate_bpy_object, set_bloom
+from utils.img_utils import IMG_EXT
 from utils.utils import get_yaml
 
 class BackgroundGenerator():
     def __init__(self, config_dict) -> None:
 
         self.earth_dict = config_dict['assets']['earth_blend']
-        self.sky_dict   = config_dict['assets']['sky_blend']   
+        # self.sky_dict   = config_dict['assets']['sky_blend']   
 
     def generate(self, mode):
         print(f'Creating a(n) {mode} background')
@@ -19,13 +21,32 @@ class BackgroundGenerator():
         elif mode == 'empty_space_partial_earth':
             creation_mode = self.earth_dict['creation_mode']
             return self.generate_earth(creation_mode), creation_mode
-        elif mode == 'full_earth':
-            creation_mode = self.sky_dict['creation_mode']
-            return self.generate_sky(creation_mode), creation_mode
 
-    def generate_sky(self, creation_mode):
-        #TODO generate sky
-        pass
+    def replace_cloud(self):
+        cloud_texture_paths = [path for path in os.listdir(self.earth_dict['cloud_texture']) if '.'+path.split('.')[-1].lower() in IMG_EXT]
+        new_cloud_texture_path = os.path.join(self.earth_dict['cloud_texture'], random.choice(cloud_texture_paths))
+
+        replace_img_texture(
+            obj_name="Cloud", 
+            image_path = new_cloud_texture_path, 
+            )
+    
+    def rotate_cloud(self):
+        random_rotate_bpy_object("Cloud")
+
+    def rotate_earth(self):
+        random_rotate_bpy_object("Earth")
+
+    def modify_earth(self):
+        self.rotate_cloud()
+        self.rotate_earth()
+
+    def randomize_bloom():
+        set_bloom(
+            # bloom_radius=0,
+            bloom_threshold= random.uniform(0,1),
+            # bloom_color=,
+        )
 
     def generate_earth(self, creation_mode):
         if creation_mode == 'create':

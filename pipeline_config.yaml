@@ -7,26 +7,26 @@ WIP_blend_file_path:
 img_size: (640,480)
 
 modes: 
-  - empty_space
+  # - empty_space
   - empty_space_partial_earth
-  # - full_earth
-
+  
 background:
   assets:
     earth_blend:
       dir: ./asset/background/earth
       import_object: Earth
       import_blend:  ./asset/background/earth/planet_earth_v1.blend
-      earth_texture: ./asset/background/sky/earth_texture
-      cloud_texture: ./asset/background/sky/cloud_texture
+      earth_texture: ./asset/background/earth/earth_texture
+      cloud_texture: ./asset/background/earth/cloud_texture
       camera_orbiting_range: ()
       creation_mode: import
 
-    sky_blend:
-      dir: ./asset/background/
-      import_blend:
-      sky_texture: ./asset/background/sky/sky_texture
-      creation_mode: create
+    ## Depreciated
+    # sky_blend:
+    #   dir: ./asset/background/
+    #   import_blend:
+    #   sky_texture: ./asset/background/sky/sky_texture
+    #   creation_mode: create
 
 light:
   specify_config: False
@@ -67,6 +67,6 @@ space_targets:
     textures: ./asset/space_targets/other/textures
 
 operation_config:
-  num_cycle: 4
+  num_cycle: 1
   num_iter_per_cycle: 1
   num_view_per_iter: 1

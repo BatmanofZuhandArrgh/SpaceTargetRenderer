@@ -5,6 +5,7 @@ import numpy as np
 
 UV_DEFAULT_SHAPE = (1024,1024,3)
 SINGLE_SIDE_LEN = int(UV_DEFAULT_SHAPE[0]//8)
+IMG_EXT = ['.jpg', '.jpeg', '.png']
 
 def img_random_rotate_by_90(matrix):
     if bool(random.getrandbits(1)):

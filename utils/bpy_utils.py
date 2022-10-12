@@ -37,6 +37,12 @@ def append_bpy_object(blend_filepath, section, object = "Cube"):
     
     return object
 
+def replace_img_texture(obj_name, image_path):
+    new_img = bpy.data.images.load(filepath = image_path)
+
+    cloud_obj = bpy.data.objects[obj_name]
+    cloud_obj.material_slots[0].material.node_tree.nodes["Image Texture"].image = new_img
+
 def get_bpy_mesh_from_blend(blend_filepath):
     with bpy.data.libraries.load(blend_filepath) as (data_from, data_to):
         return data_from.meshes
@@ -173,6 +179,28 @@ def add_image_texture(obj, mat):
 def count_bpy_object_bysubstring(substring = 'st_'):
     obj_names = get_bpy_objnames()
     return len([name for name in obj_names if substring.lower() in name.lower()]) 
+
+def render_region():
+    #Render only the region within the camera, to increase rendering speed
+    bpy.data.scenes['Scene'].render.border_min_x = 0.25
+    bpy.data.scenes['Scene'].render.border_max_x = 0.75
+    bpy.data.scenes['Scene'].render.border_min_y = 0.25
+    bpy.data.scenes['Scene'].render.border_max_y = 0.75
+
+def set_bloom(
+    bloom_threshold = 0.8,
+    bloom_radius = 6.50268,
+    bloom_knee = 0.5,
+    bloom_color = (0.638,0.719, 1),
+    bloom_intensity = 0.1,
+    bloom_clamp = 0,
+    ):
+    bpy.context.scene.eevee.bloom_threshold = bloom_threshold
+    bpy.context.scene.eevee.bloom_radius = bloom_radius
+    bpy.context.scene.eevee.bloom_knee = bloom_knee
+    bpy.context.scene.eevee.bloom_color = bloom_color
+    bpy.context.scene.eevee.bloom_intensity = bloom_intensity
+    bpy.context.scene.eevee.bloom_clamp = bloom_clamp
 
 def get_calibration_matrix_K_from_blender(mode='simple'):
     '''

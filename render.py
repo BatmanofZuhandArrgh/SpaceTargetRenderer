@@ -1,4 +1,5 @@
 from ast import literal_eval
+from functools import partial
 import os
 import random
 import bpy
@@ -18,7 +19,8 @@ from utils.bpy_utils import append_bpy_object, delete_bpy_object, get_bpy_objnam
     random_rotate_bpy_object, show_bpy_objects,\
      delete_bpy_object, delete_bpy_objects_by_name_substring, \
         random_rotate_bpy_object, count_bpy_object_bysubstring,\
-            set_location_bpy_object, get_bpy_obj_coord, set_render_img_size
+            set_location_bpy_object, get_bpy_obj_coord, set_render_img_size,\
+            render_region
 
 from blender_objects.space_target import SpaceTargetGenerator
 from blender_objects.background import BackgroundGenerator
@@ -150,12 +152,20 @@ class RenderPipeline:
     def init_blend(self):     
         # Opening WIP blend file path to append objects, if not start new one 
         if self.WIP_blend_file_path not in [None, ""]:
-            bpy.ops.wm.open_mainfile(filepath=self.WIP_blend_file_path)             
+            bpy.ops.wm.open_mainfile(filepath=self.WIP_blend_file_path) 
+            self.background_generator.replace_cloud()  
+            self.background_generator.randomize_bloom()        
         else:
             bpy.ops.wm.read_homefile(use_empty=True)
 
         self.delete_all_space_targets()
         set_render_img_size(self.img_size)
+
+    def modify_environment(self, mode):
+        if mode == 'empty_space_partial_earth':
+            self.background_generator.modify_earth()
+        elif mode == 'empty_space':
+            pass
 
     def render(self):
         #https://docs.blender.org/manual/en/latest/advanced/command_line/render.html            
@@ -169,6 +179,7 @@ class RenderPipeline:
                 blend_file_path = tmp_file.name   
 
                 self.WIP_blend_file_path, creation_mode = self.generate_background(mode)
+                
                 # WIP_blend_file_path might be supplied if background is imported
                 self.init_blend()
 
@@ -186,7 +197,10 @@ class RenderPipeline:
                         self.space_target_rotating()
                         self.space_target_positioning()  
                         self.space_target_updating()
-
+                        self.modify_environment(mode)
+                        
+                        # render_region() #Does not work, increase cloud generation time
+                        
                         #Render                         
                         img_path = os.path.join(self.output_dir,f'c{cycle}_i{iter}_v{view}')
                         bpy.ops.wm.save_mainfile(filepath=blend_file_path)

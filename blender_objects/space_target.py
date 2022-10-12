@@ -12,7 +12,7 @@ from math import sqrt
 
 from utils.bpy_utils import add_image_texture, append_bpy_object, create_image_texture, get_bpy_objnames, get_rotation_euler_bpy_object, \
     show_bpy_objects, get_location_bpy_object, get_dimensions_bpy_object
-from utils.img_utils import stitching_upwrapped_texture
+from utils.img_utils import stitching_upwrapped_texture, IMG_EXT
 from utils.utils import get_yaml
 
 class SpaceTarget():
@@ -50,7 +50,6 @@ class SpaceTarget():
         print('dimensions: ', self.dimensions)
         # print('vertices: ', self.vertices_coords_world, self.vertices_coords_img)
 
-IMG_EXT = ['.jpg', '.jpeg', '.png']
 class SpaceTargetGenerator():
     def __init__(self, config_dict) -> None:
         self.cubesat_dict = config_dict['cubesats']

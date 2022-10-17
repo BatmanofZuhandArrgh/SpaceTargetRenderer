@@ -7,6 +7,7 @@ import subprocess
 import tempfile
 import yaml
 import cv2
+import time
 
 from math import radians
 from blender_objects.cubesat import CubeSat
@@ -154,7 +155,7 @@ class RenderPipeline:
         if self.WIP_blend_file_path not in [None, ""]:
             bpy.ops.wm.open_mainfile(filepath=self.WIP_blend_file_path) 
             self.background_generator.replace_cloud()  
-            self.background_generator.randomize_bloom()        
+            # self.background_generator.randomize_bloom()        
         else:
             bpy.ops.wm.read_homefile(use_empty=True)
 
@@ -168,11 +169,15 @@ class RenderPipeline:
             pass
 
     def render(self):
+
+        start_time = time.time()
+        render_imgs = 0
+
         #https://docs.blender.org/manual/en/latest/advanced/command_line/render.html            
         for cycle in range(self.operational_config['num_cycle']):
             #For every cycle, create background, set up light and camera
             mode =  random.choice(self.modes)   
-            # mode = 'empty_space' #_partial_earth' #_partial_earth' #TODO Delete this
+            mode = 'empty_space' #_partial_earth' #_partial_earth' #TODO Delete this
 
             #Create temp filepath to save blend file
             with tempfile.NamedTemporaryFile() as tmp_file:
@@ -197,7 +202,7 @@ class RenderPipeline:
                         self.space_target_rotating()
                         self.space_target_positioning()  
                         self.space_target_updating()
-                        self.modify_environment(mode)
+                        self.modify_environment(mode)                    
                         
                         # render_region() #Does not work, increase cloud generation time
                         
@@ -207,6 +212,7 @@ class RenderPipeline:
                         
                         parameters = [self.blender_exe, '-b', blend_file_path, '-o', img_path,'--engine', self.blender_engine,'-f', '1']
                         subprocess.call(parameters)
+                        render_imgs += 1 
                         
                         #Draw bounding box
                         img_path = os.path.splitext(img_path)[0] + '0001.png'
@@ -240,6 +246,9 @@ class RenderPipeline:
                         print('=======================================')
 
                 self.WIP_blend_file_path = "" #Reset TODO Refactor
+
+        print('Avg rendering time: ', (time.time() - start_time)/render_imgs, 'seconds/img')
+
 def main():
     pipeline = RenderPipeline()
 

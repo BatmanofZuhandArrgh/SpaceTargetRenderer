@@ -40,8 +40,8 @@ def append_bpy_object(blend_filepath, section, object = "Cube"):
 def replace_img_texture(obj_name, image_path):
     new_img = bpy.data.images.load(filepath = image_path)
 
-    cloud_obj = bpy.data.objects[obj_name]
-    cloud_obj.material_slots[0].material.node_tree.nodes["Image Texture"].image = new_img
+    obj = bpy.data.objects[obj_name]
+    obj.material_slots[0].material.node_tree.nodes["Image Texture"].image = new_img
 
 def get_bpy_mesh_from_blend(blend_filepath):
     with bpy.data.libraries.load(blend_filepath) as (data_from, data_to):
@@ -66,6 +66,9 @@ def select_bpy_object(object_name):
     # bpy.ops.object.select_all(action='DESELECT')
     bpy.data.objects[object_name].select_set(True)
     bpy.context.view_layer.objects.active = bpy.data.objects[object_name]
+
+def deselect_bpy_object():
+    bpy.context.active_object.select_set(False)
 
 def delete_bpy_object(object_name):
     '''
@@ -140,6 +143,7 @@ def set_rotation_euler_bpy_object(object_name, x, y, z):
 def set_dimensions_bpy_object(object_name, x, y, z):
     obj = bpy.data.objects[object_name]
     obj.dimensions = (x, y, z)
+    bpy.context.view_layer.update() # The scene refresh after updating values, specifically for dimensions for some reasons
 
 def get_location_bpy_object(object_name):
     obj = bpy.data.objects[object_name]
@@ -152,6 +156,12 @@ def get_rotation_euler_bpy_object(object_name):
 def get_dimensions_bpy_object(object_name):
     obj = bpy.data.objects[object_name]
     return obj.dimensions
+
+def scale_dimensions_bpy_object(object_name, scale_ratio):
+    obj = bpy.data.objects[object_name]
+    new_dimensions = np.array(obj.dimensions) * scale_ratio
+    obj.dimensions = (new_dimensions[0], new_dimensions[1], new_dimensions[2])
+    bpy.context.view_layer.update()
 
 def change_background_color(hsva = (0, 0, 0, 1)):
     #Default is pitch black
@@ -180,12 +190,18 @@ def count_bpy_object_bysubstring(substring = 'st_'):
     obj_names = get_bpy_objnames()
     return len([name for name in obj_names if substring.lower() in name.lower()]) 
 
+def set_bpy_obj_origin(obj_name, centering_mode = "ORIGIN_GEOMETRY"):
+    select_bpy_object(obj_name)
+    bpy.ops.object.origin_set(type=centering_mode)
+    deselect_bpy_object()
+
 def render_region():
     #Render only the region within the camera, to increase rendering speed
     bpy.data.scenes['Scene'].render.border_min_x = 0.25
     bpy.data.scenes['Scene'].render.border_max_x = 0.75
     bpy.data.scenes['Scene'].render.border_min_y = 0.25
     bpy.data.scenes['Scene'].render.border_max_y = 0.75
+
 
 def set_bloom(
     bloom_threshold = 0.8,

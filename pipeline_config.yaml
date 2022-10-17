@@ -7,7 +7,7 @@ WIP_blend_file_path:
 img_size: (640,480)
 
 modes: 
-  # - empty_space
+  - empty_space
   - empty_space_partial_earth
   
 background:
@@ -44,10 +44,10 @@ camera:
     vertical_dist: (1, 20)
 
 space_targets:
-  range_num_obj: (1,6) 
+  range_num_obj: (1,2) 
 
   cubesats:
-    included: True
+    included: False
     1U: ./asset/space_targets/cubesats/cubesat_1U.blend
     2U: ./asset/space_targets/cubesats/cubesat_2U.blend
     3U: ./asset/space_targets/cubesats/cubesat_3U.blend
@@ -62,7 +62,7 @@ space_targets:
     textures: ./asset/space_targets/other_st/textures
 
   other:
-    included: True
+    included: False
     dir: ./asset/space_targets/other
     textures: ./asset/space_targets/other/textures
 

@@ -5,13 +5,14 @@ import random
 import glob
 import numpy as np
 import bpy
+import time
 
 from ast import literal_eval
 from pprint import pprint
 from math import sqrt
 
 from utils.bpy_utils import add_image_texture, append_bpy_object, create_image_texture, get_bpy_objnames, get_rotation_euler_bpy_object, \
-    show_bpy_objects, get_location_bpy_object, get_dimensions_bpy_object
+    show_bpy_objects, get_location_bpy_object, get_dimensions_bpy_object, set_bpy_obj_origin
 from utils.img_utils import stitching_upwrapped_texture, IMG_EXT
 from utils.utils import get_yaml
 
@@ -100,7 +101,7 @@ class SpaceTargetGenerator():
             return out_img_path
         
         stitching_upwrapped_texture(single_side_texture_path, obj_type, out_img_path)
-        return out_img_path        
+        return out_img_path  
 
     def generate(self):
         #By default, pipeline imports the space targets, instead of c
@@ -128,8 +129,17 @@ class SpaceTargetGenerator():
 
             obj = bpy.data.objects.get(object_name)
             obj.name = 'ST_' + obj_type + '_' + object_name + f'_{i}'
+            set_bpy_obj_origin(obj.name, centering_mode = "ORIGIN_GEOMETRY") #Since some of the obj doesn't have the origin as the geometry center already
+
+            #Scale cuz the ot_sts are sometimes too small or too big
+            obj_dimension = np.array(obj.dimensions)
+            scale_ratio = 2 / min(obj_dimension) # 2m is the dimension of a default cube in blender
+            obj.dimensions = (obj_dimension[0]* scale_ratio, obj_dimension[1]* scale_ratio, obj_dimension[2]* scale_ratio)
+            bpy.context.view_layer.update()
 
             add_image_texture(obj, mat=mat)
+            print(scale_ratio)
+            print(obj_dimension, obj.dimensions)
 
 def main():
     config_dict = get_yaml('pipeline_config.yaml')

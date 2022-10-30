@@ -1,18 +1,11 @@
 from ast import literal_eval
-from functools import partial
 import os
 import random
 import bpy
 import subprocess
 import tempfile
-import yaml
 import cv2
 import time
-
-from math import radians
-from blender_objects.cubesat import CubeSat
-from pprint import pprint
-from blender_objects.other_ST import Other_ST
 
 from utils.utils import get_yaml
 from utils.math_utils import * 
@@ -23,7 +16,8 @@ from utils.bpy_utils import append_bpy_object, delete_bpy_object, get_bpy_objnam
             set_location_bpy_object, get_bpy_obj_coord, set_render_img_size,\
             render_region
 
-from blender_objects.space_target import SpaceTargetGenerator
+from blender_objects.cubesat import CubeSat
+from blender_objects.space_target_gen import SpaceTargetGenerator
 from blender_objects.background import BackgroundGenerator
 from blender_objects.camera import CameraGenerator
 from blender_objects.light import LightGenerator
@@ -79,7 +73,7 @@ class RenderPipeline:
         for name in self.cur_st_obj_names:
 
             print(name)
-            if 'CubeSat' in name:
+            if 'CubeSat' in name or 'OtherST' in name:
                 self.cur_st_objs[name] = CubeSat(
                     obj_name=name,
                     img_coord=(0,0),
@@ -87,14 +81,8 @@ class RenderPipeline:
                     world_coord=(0,0,0)
                 )
 
-            elif 'OtherST' in name:
-                self.cur_st_objs[name] = Other_ST(
-                    obj_name=name,
-                    img_coord=(0,0),
-                    cam_coord=(0,0,0),
-                    world_coord=(0,0,0)
-                )
-
+            else:
+                raise NotImplementedError('Unknown space target type or wrong naming convention')
 
     def light_setup_n_positioning(self, mode, creation_mode):
         self.light_generator.create_light(mode, creation_mode)
@@ -223,6 +211,7 @@ class RenderPipeline:
                             bbox_width = self.cur_st_objs[name].bbox[1][0] - self.cur_st_objs[name].bbox[0][0]
                             bbox_height = self.cur_st_objs[name].bbox[1][1] - self.cur_st_objs[name].bbox[0][1]
 
+                            # print(self.cur_st_objs[name].print_info())
                             cv2.circle(cur_img, (center_coord[0], center_coord[1]), radius=2, color=(0,0, 255), thickness=2)
                             cur_img = cv2.rectangle(cur_img, self.cur_st_objs[name].bbox[0], self.cur_st_objs[name].bbox[1], color =(255,0, 0), thickness = 2)
                             label = [
@@ -235,7 +224,7 @@ class RenderPipeline:
                             labels.append(' '.join(label))
 
                         cv2.imwrite(filename=img_path, img=cur_img)
-                        
+
                         #Output text
                         txt_name = os.path.splitext(os.path.basename(img_path))[0] + '.txt'
                         txt_path = os.path.join(self.output_dir, txt_name)
@@ -244,10 +233,11 @@ class RenderPipeline:
                             f.write('\n'.join(labels))
 
                         print('=======================================')
+                        
 
                 self.WIP_blend_file_path = "" #Reset TODO Refactor
 
-        print('Avg rendering time: ', (time.time() - start_time)/render_imgs, 'seconds/img')
+        # print('Avg rendering time: ', (time.time() - (start_time + 1e-8))/render_imgs, 'seconds/img')
 
 def main():
     pipeline = RenderPipeline()

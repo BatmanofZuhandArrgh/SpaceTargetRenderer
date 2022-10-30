@@ -232,7 +232,6 @@ def get_calibration_matrix_K_from_blender(mode='simple'):
     camdata = scene.camera.data
 
     if mode == 'simple':
-        print(camdata.angle)
         aspect_ratio = width / height
         K = np.zeros((3,3), dtype=np.float32)
         K[0][0] = width / 2 / np.tan(camdata.angle / 2)

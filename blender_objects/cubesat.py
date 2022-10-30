@@ -1,16 +1,17 @@
-import math
 import numpy as np
 
-from space_target import SpaceTarget
+from blender_objects.space_target import SpaceTarget
 from utils.math_utils import get_rotation_mat
 
+#For the moment, to map bounding box, this flow works with both CubeSat and Other_SpaceTargets
+# It will output not tight, but good enough bounding box for other st
 class CubeSat(SpaceTarget):
     def __init__(self, obj_name, img_coord, cam_coord, world_coord):
         super().__init__(obj_name, img_coord, cam_coord, world_coord)
 
         #init world coordinates of cubesat that are not rotated (rotation = 0,0,0) or translated (location = 0,0,0), we call this trivial
         #All cubesats vertices are equidistance from the center. It's also the max distance of any point in the cubesat to the center
-        self.max_dist = math.sqrt(self.dimensions[0]**2 + self.dimensions[1]**2 + self.dimensions[2]**2)
+        # self.max_dist = math.sqrt(self.dimensions[0]**2 + self.dimensions[1]**2 + self.dimensions[2]**2)
         
         world_abs_vertex_coord = self.dimensions/2 #Absolute values of vertices in non-rotated non-translated cubesats
         world_vertix_multiplier = [

@@ -150,7 +150,7 @@ def main():
     ex_mat = cam_gen.get_extrinsic_matrix()
     inv_ex_mat = np.linalg.inv(ex_mat)
     # inv_ex_mat_3x4 = inv_ex_mat[:-1,:] #Remove the bottom [0,0,0,1] row
-
+    print(cam_gen.get_intrinsic_matrix())
     # sample_coord = np.array([1,2,3])
     # print(inv_ex_mat.dot(np.array([1,2,3,1])))
     # print(inv_ex_mat_3x4.dot(np.array([1,2,3])))

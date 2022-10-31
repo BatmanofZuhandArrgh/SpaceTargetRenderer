@@ -1,8 +1,6 @@
 import os
 import random
 
-from pprint import pprint 
-
 from utils.bpy_utils import replace_img_texture, random_rotate_bpy_object, set_bloom
 from utils.img_utils import IMG_EXT
 from utils.utils import get_yaml
@@ -18,7 +16,7 @@ class BackgroundGenerator():
 
         if mode == 'empty_space':
             return "", 'create'
-        elif mode == 'empty_space_partial_earth':
+        elif mode in ['empty_space_partial_earth', 'full_earth'] :
             creation_mode = self.earth_dict['creation_mode']
             return self.generate_earth(creation_mode), creation_mode
 

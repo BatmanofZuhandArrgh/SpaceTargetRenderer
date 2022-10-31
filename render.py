@@ -73,7 +73,6 @@ class RenderPipeline:
         self.cur_st_objs.clear() #Clear before populating with new objs
         for name in self.cur_st_obj_names:
 
-            print(name)
             if 'CubeSat' in name or 'OtherST' in name:
                 self.cur_st_objs[name] = CubeSat(
                     obj_name=name,
@@ -160,7 +159,7 @@ class RenderPipeline:
         # Opening WIP blend file path to append objects, if not start new one 
         if self.WIP_blend_file_path not in [None, ""]:
             bpy.ops.wm.open_mainfile(filepath=self.WIP_blend_file_path) 
-            self.background_generator.replace_cloud()  
+            self.background_generator.replace_cloud() #TODO  
             # self.background_generator.randomize_bloom()        
         else:
             bpy.ops.wm.read_homefile(use_empty=True)
@@ -169,7 +168,7 @@ class RenderPipeline:
         set_render_img_size(self.img_size)
 
     def modify_environment(self, mode):
-        if mode == 'empty_space_partial_earth':
+        if mode in ['empty_space_partial_earth', 'full_earth']:
             self.background_generator.modify_earth()
         elif mode == 'empty_space':
             pass
@@ -183,7 +182,8 @@ class RenderPipeline:
         for cycle in range(self.operational_config['num_cycle']):
             #For every cycle, create background, set up light and camera
             mode =  random.choice(self.modes)   
-            mode = 'empty_space' #_partial_earth' #_partial_earth' #TODO Delete this
+            mode = 'empty_space_partial_earth' #_partial_earth' #TODO Delete this
+            mode = 'full_earth'
 
             #Create temp filepath to save blend file
             with tempfile.NamedTemporaryFile() as tmp_file:

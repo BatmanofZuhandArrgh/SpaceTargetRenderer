@@ -1,5 +1,6 @@
 import bpy
 import numpy as np
+import random
 
 from ast import literal_eval
 
@@ -31,12 +32,19 @@ class CameraGenerator():
         for key in self.st_range.keys():
             self.st_range[key] = literal_eval(self.st_range[key])
 
+        self.cam_range = config_dict['cam2earth_range']
+        for key in self.cam_range.keys():
+                self.cam_range[key] = literal_eval(self.cam_range[key])
+
     def delete_existing_cameras(self):
         # Delete all existing cameras
         existing_cameras = [ob for ob in list(bpy.context.scene.objects) if ob.type == 'CAMERA']
         for camera in existing_cameras:
             camera_name = camera.name
             delete_bpy_object(camera_name)
+    
+    def randomize_camera_position(self, camera_name):
+        return
 
     def create_camera(self, mode, creation_mode = 'create'):
         '''
@@ -44,37 +52,46 @@ class CameraGenerator():
         '''
         camera_name = "Camera"
 
-        if creation_mode == "import":
+        if creation_mode == "import":            
+            if mode == 'full_earth':
+                #randomize camera distance from earth surface
+                print('here')
+                print(random.uniform(-self.cam_range['distance'][0], -self.cam_range['distance'][1]))
+                set_location_bpy_object(camera_name, 0, random.uniform(-self.cam_range['distance'][0], -self.cam_range['distance'][1]), 0)
+            elif mode == 'empty_space_partial_earth':
+                self.randomize_camera_position(camera_name)
+
             #Assuming the WIP blenderscene has already got a well setup camera, named "Camera"
             self.x, self.y, self.z, self.rx, self.ry, self.rz = \
                 get_bpy_camera_coordinates()
-            
-            self.set_extrinsic_matrix()
-            self.set_intrinsic_matrix()
-            return
 
-        self.delete_existing_cameras()
-        #Only ever create 1 camera. Current camera must be deleted before making another one
-        camera_data = bpy.data.cameras.new(name=camera_name)
-        camera_object = bpy.data.objects.new(camera_name, camera_data)
-        bpy.context.scene.collection.objects.link(camera_object)
-        bpy.context.scene.camera = camera_object
+        elif creation_mode == 'create':
+            self.delete_existing_cameras()
+            #Only ever create 1 camera. Current camera must be deleted before making another one
+            camera_data = bpy.data.cameras.new(name=camera_name)
+            camera_object = bpy.data.objects.new(camera_name, camera_data)
+            bpy.context.scene.collection.objects.link(camera_object)
+            bpy.context.scene.camera = camera_object
 
-        if mode == 'empty_space':
-            self.x, self.y, self.z = 7.3589, -6.9258, 4.9583
-            self.rx, self.ry, self.rz = radians(63.6), 0, radians(46.7)
+            if mode == 'empty_space':
+                self.x, self.y, self.z = 7.3589, -6.9258, 4.9583
+                self.rx, self.ry, self.rz = radians(63.6), 0, radians(46.7)
 
-        elif mode == 'empty_space_partial_earth':
-            #TODO edit general camera positioning
-            self.x, self.y, self.z = 3.0638, -8.9029, -2.1132
-            self.rx, self.ry, self.rz = radians(89.6), radians(0), radians(89.6)
+            elif mode == 'empty_space_partial_earth':
+                #TODO edit general camera positioning
+                # self.x, self.y, self.z = 3.0638, -8.9029, -2.1132
+                # self.rx, self.ry, self.rz = radians(89.6), radians(0), radians(89.6)
+                self.x, self.y, self.z = 0, -900, -0
+                self.rx, self.ry, self.rz = radians(90), radians(90), radians(0)
+                
+            elif mode == "full_earth":
+                self.x, self.y, self.z = 0, random.uniform(-900, -1800), 0
+                self.rx, self.ry, self.rz = radians(90), radians(90), radians(0)
 
-        elif mode == "full_earth":
-            self.x, self.y, self.z = 0, 0, 0
-            self.rx, self.ry, self.rz = 0, 0, 0
-
-        set_location_bpy_object(camera_name, self.x, self.y, self.z)
-        set_rotation_euler_bpy_object(camera_name, self.rx, self.ry, self.rz)
+            set_location_bpy_object(camera_name, self.x, self.y, self.z)
+            set_rotation_euler_bpy_object(camera_name, self.rx, self.ry, self.rz)
+        else:
+            raise ValueError(f'Not a valid creation mode {creation_mode}')
 
         self.set_extrinsic_matrix()
         self.set_intrinsic_matrix()

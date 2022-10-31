@@ -98,7 +98,6 @@ def nms(bboxes, overlap_thres = 0.75):
             smaller_overlap_ratio = intersection_area/areas[smaller_box_index]
                         
             if smaller_overlap_ratio > overlap_thres:
-                print(smaller_overlap_ratio, 'break')
                 break
         else: 
             picked_indices.append(i)

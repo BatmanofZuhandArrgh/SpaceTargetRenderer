@@ -9,13 +9,14 @@ img_size: (640,480)
 modes: 
   - empty_space
   - empty_space_partial_earth
+  - full_earth
   
 background:
   assets:
     earth_blend:
       dir: ./asset/background/earth
       import_object: Earth
-      import_blend:  ./asset/background/earth/planet_earth_v1.blend
+      import_blend:  ./asset/background/earth/planet_earth_v2.blend
       earth_texture: ./asset/background/earth/earth_texture
       cloud_texture: ./asset/background/earth/cloud_texture
       camera_orbiting_range: ()
@@ -43,8 +44,11 @@ camera:
     horizontal_dist: (2.5, 36)   #Horizontal distance from the axis of the camera
     vertical_dist: (1, 20)
 
+  cam2earth_range:
+    distance: (900, 1800)
+
 space_targets:
-  range_num_obj: (1,25) 
+  range_num_obj: (1,15) 
 
   cubesats:
     included: True
@@ -68,5 +72,5 @@ space_targets:
 
 operation_config:
   num_cycle: 1
-  num_iter_per_cycle: 4
-  num_view_per_iter: 4
+  num_iter_per_cycle: 1
+  num_view_per_iter: 1

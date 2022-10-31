@@ -34,6 +34,7 @@ class CubeSat(SpaceTarget):
         self.vertices_coords_world = [self.location + rotation_mat.dot(vert) for vert in self.vertices_coords_world_trivial]
 
     def update_vertices(self, cam_intrinsic_mat, cam_extrinsic_mat):
+        #Convert vertices from world coordinates to camera coordinates, then to img coords
         vert_coords_world = [np.concatenate((ver, np.array([1])), axis = 0) for ver in self.vertices_coords_world]
         vert_coords_cam   = [cam_extrinsic_mat.dot(ver) for ver in vert_coords_world]
         vert_coords_img   = [cam_intrinsic_mat.dot(ver[:-1]) for ver in vert_coords_cam]

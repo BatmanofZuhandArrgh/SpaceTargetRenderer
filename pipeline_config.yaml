@@ -44,16 +44,16 @@ camera:
     vertical_dist: (1, 20)
 
 space_targets:
-  range_num_obj: (1,4) 
+  range_num_obj: (1,25) 
 
   cubesats:
     included: True
     1U: ./asset/space_targets/cubesats/cubesat_1U.blend
-    # 2U: ./asset/space_targets/cubesats/cubesat_2U.blend
-    # 3U: ./asset/space_targets/cubesats/cubesat_3U.blend
-    # 4U: ./asset/space_targets/cubesats/cubesat_4U.blend
-    # 6U: ./asset/space_targets/cubesats/cubesat_6U.blend
-    # 12U: ./asset/space_targets/cubesats/cubesat_12U.blend 
+    2U: ./asset/space_targets/cubesats/cubesat_2U.blend
+    3U: ./asset/space_targets/cubesats/cubesat_3U.blend
+    4U: ./asset/space_targets/cubesats/cubesat_4U.blend
+    6U: ./asset/space_targets/cubesats/cubesat_6U.blend
+    12U: ./asset/space_targets/cubesats/cubesat_12U.blend 
     textures: ./asset/space_targets/cubesats/textures/one_side #Must be the directory to the one_side cubesat texture
 
   other_st:
@@ -68,5 +68,5 @@ space_targets:
 
 operation_config:
   num_cycle: 1
-  num_iter_per_cycle: 1
-  num_view_per_iter: 1
+  num_iter_per_cycle: 4
+  num_view_per_iter: 4

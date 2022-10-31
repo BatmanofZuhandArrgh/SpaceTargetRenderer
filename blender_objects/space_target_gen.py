@@ -39,7 +39,6 @@ class SpaceTargetGenerator():
                     self.space_targets[key]['dir'] = self.cubesat_dict[key]
                     self.space_targets[key]['textures'] = [path for path in glob.glob(f'{self.cubesat_dict["textures"]}/**', recursive=True) if '.' + path.split('.')[-1].lower() in IMG_EXT]    
                     self.space_targets[key]['object_name'] = "Cube"
-        # pprint(self.space_targets)
 
     def stitch_cube_texture(self, single_side_texture_path, obj_type):
         '''

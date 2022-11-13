@@ -135,10 +135,13 @@ def random_rotate_bpy_object(object_name):
 def set_location_bpy_object(object_name, x, y, z):
     obj = bpy.data.objects[object_name]
     obj.location = (x, y, z)
+    bpy.context.view_layer.update()
+
 
 def set_rotation_euler_bpy_object(object_name, x, y, z):
     obj = bpy.data.objects[object_name]
     obj.rotation_euler = (x, y, z)
+    bpy.context.view_layer.update()
 
 def set_dimensions_bpy_object(object_name, x, y, z):
     obj = bpy.data.objects[object_name]
@@ -201,7 +204,6 @@ def render_region():
     bpy.data.scenes['Scene'].render.border_max_x = 0.75
     bpy.data.scenes['Scene'].render.border_min_y = 0.25
     bpy.data.scenes['Scene'].render.border_max_y = 0.75
-
 
 def set_bloom(
     bloom_threshold = 0.8,
@@ -290,6 +292,9 @@ def get_calibration_matrix_K_from_blender(mode='simple'):
 #       - right-handed: negative z look-at direction
 
 def get_4x4_RT_matrix_from_blender(cam):
+    '''
+    Get extrinsic matrix
+    '''
     # bcam stands for blender camera
     R_bcam2cv = np.array([[1, 0, 0], [0, -1, 0], [0, 0, -1]])
 
@@ -315,3 +320,28 @@ def get_4x4_RT_matrix_from_blender(cam):
     RT = np.concatenate((R_world2cv, T_world2cv), axis = 1)
 
     return RT
+
+
+def get_cam_angle_to_look_at(camera_name, point):
+    #return angle (degree) needed to be set for camera to point to a target point
+    obj_camera = bpy.data.objects[camera_name]
+    print(obj_camera.matrix_world)
+    loc_camera = obj_camera.matrix_world.to_translation()
+
+    direction = point - loc_camera
+    # point the cameras '-Z' and use its 'Y' as up
+    rot_quat = direction.to_track_quat('-Z', 'Y')
+
+    # assume we're using euler rotation
+    return [x * 180 / np.pi for x in rot_quat.to_euler()]
+
+if __name__ == '__main__':
+    obj_camera = bpy.data.objects["Camera"]
+    obj_other = bpy.data.objects["Cube"]
+
+    obj_camera.location = (5.0, 2.0, 3.0)
+    bpy.context.view_layer.update()
+    
+    angles = get_cam_angle_to_look_at(obj_camera, obj_other.matrix_world.to_translation())
+    print(angles)
+    print([x * 180 / np.pi for x in angles])

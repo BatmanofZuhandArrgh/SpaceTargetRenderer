@@ -1,7 +1,7 @@
 import os
 import random
 
-from utils.bpy_utils import replace_img_texture, random_rotate_bpy_object, set_bloom
+from utils.bpy_utils import get_dimensions_bpy_object, get_location_bpy_object, replace_img_texture, random_rotate_bpy_object, set_bloom
 from utils.img_utils import IMG_EXT
 from utils.utils import get_yaml
 
@@ -72,6 +72,13 @@ class BackgroundGenerator():
         # Return Earth asset file path as the WIP file_path
         return self.earth_dict['import_blend']
         
+    def get_earth_data(self):
+        #Return center location and radius of earth, assuming in blender the larger atmosphere is called Cloud
+        earth_objname = "Cloud" 
+        center = get_location_bpy_object(object_name=earth_objname)
+        dx, dy, dz = get_dimensions_bpy_object(object_name=earth_objname) 
+        return center, (dx+dy+dz)/3/2
+
     def rotate(self):
         pass
 
@@ -81,7 +88,6 @@ def main():
     bg_dict = config_dict['background']
     background_gen = BackgroundGenerator(bg_dict)
     background_gen.generate('create')
-
 
 if __name__ == '__main__':
     main()

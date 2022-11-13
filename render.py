@@ -92,6 +92,13 @@ class RenderPipeline:
         self.intrinsic_mat = self.camera_generator.get_intrinsic_matrix()
         self.extrinsic_mat = self.camera_generator.get_extrinsic_matrix()
 
+    def background_setup(self, mode):
+        if mode =='empty_space':
+            return
+        elif mode in  ['empty_space_partial_earth', 'full_earth']:
+            center, radius = self.background_generator.get_earth_data()
+            self.camera_generator.update_earth_data(center, radius)
+
     def camera_positioning(self, position):
         pass
 
@@ -116,7 +123,9 @@ class RenderPipeline:
 
         self.st_coords_img = [self.intrinsic_mat.dot(coords[:-1]) for coords in self.st_coords_cam]
         self.st_coords_img = [((coord/coord[2]).astype(int))[:-1] for coord in self.st_coords_img]
-
+        print(self.intrinsic_mat)
+        print(self.st_coords_cam[0])
+        print(self.st_coords_img[0])
     def space_target_rotating(self):
         #Randomly rotating space targets
         for obj_name in self.cur_st_obj_names:
@@ -193,6 +202,8 @@ class RenderPipeline:
                 
                 # WIP_blend_file_path might be supplied if background is imported
                 self.init_blend()
+
+                self.background_setup(mode)
 
                 self.light_setup_n_positioning(mode, creation_mode)
 

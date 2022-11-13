@@ -1,10 +1,11 @@
+from turtle import distance
 import bpy
 import numpy as np
 import random
 
 from ast import literal_eval
 
-from utils.math_utils import get_random_point_on_3dpolygon, get_random_point_on_3dline
+from utils.math_utils import get_random_point_on_3dpolygon, get_random_point_on_3dline, get_random_point_on_circle_xyplane
 from utils.bpy_utils import get_calibration_matrix_K_from_blender, get_4x4_RT_matrix_from_blender, show_bpy_objects
 from utils.utils import get_yaml
 
@@ -35,6 +36,14 @@ class CameraGenerator():
         self.cam_range = config_dict['cam2earth_range']
         for key in self.cam_range.keys():
                 self.cam_range[key] = literal_eval(self.cam_range[key])
+        
+        #Earth measurements, if mode in ['empty_space_partial_earth', 'full_earth']
+        self.earth_center = None
+        self.earth_radius = None
+
+    def update_earth_data(self, center, radius):
+        self.earth_center = center
+        self.earth_radius = radius
 
     def delete_existing_cameras(self):
         # Delete all existing cameras
@@ -44,6 +53,22 @@ class CameraGenerator():
             delete_bpy_object(camera_name)
     
     def randomize_camera_position(self, camera_name):
+        '''
+        Determine the location of camera orbiting around earth
+        Output: return the location and rotation of camera that can capture a perfect frame
+        '''
+        #1. Determine the distance of camera from (0,0,0), base on the tested range
+        distance = random.uniform(self.cam_range['distance'][0], self.cam_range['distance'][1])
+
+        #2. We wil only orbit the camera around the equator of earth, where it can capture a frame with light
+        #So the camera will only be on 1 plane, where self.z = 0
+        z = 0
+        x, y = get_random_point_on_circle_xyplane(self.earth_center, radius=distance)
+        #TODO update this with a function limiting the position, not too far back behind earth
+        
+        set_location_bpy_object(camera_name, x, y, z)
+        
+
         return
 
     def create_camera(self, mode, creation_mode = 'create'):
@@ -55,11 +80,15 @@ class CameraGenerator():
         if creation_mode == "import":            
             if mode == 'full_earth':
                 #randomize camera distance from earth surface
-                print('here')
-                print(random.uniform(-self.cam_range['distance'][0], -self.cam_range['distance'][1]))
-                set_location_bpy_object(camera_name, 0, random.uniform(-self.cam_range['distance'][0], -self.cam_range['distance'][1]), 0)
+                distance = random.uniform(-self.cam_range['distance'][0], -self.cam_range['distance'][1])
+                set_location_bpy_object(camera_name, 0, distance, 0)
+                set_rotation_euler_bpy_object(camera_name, radians(90), radians(90), radians(0))
+
             elif mode == 'empty_space_partial_earth':
                 self.randomize_camera_position(camera_name)
+
+            else:
+                raise ValueError(f'Not a valid mode {mode}')
 
             #Assuming the WIP blenderscene has already got a well setup camera, named "Camera"
             self.x, self.y, self.z, self.rx, self.ry, self.rz = \
@@ -79,8 +108,11 @@ class CameraGenerator():
 
             elif mode == 'empty_space_partial_earth':
                 #TODO edit general camera positioning
+                #For earth_v1
                 # self.x, self.y, self.z = 3.0638, -8.9029, -2.1132
                 # self.rx, self.ry, self.rz = radians(89.6), radians(0), radians(89.6)
+                
+                #For earth_v2
                 self.x, self.y, self.z = 0, -900, -0
                 self.rx, self.ry, self.rz = radians(90), radians(90), radians(0)
                 
@@ -88,8 +120,12 @@ class CameraGenerator():
                 self.x, self.y, self.z = 0, random.uniform(-900, -1800), 0
                 self.rx, self.ry, self.rz = radians(90), radians(90), radians(0)
 
+            else:
+                raise ValueError(f'Not a valid mode {mode}')
+            
             set_location_bpy_object(camera_name, self.x, self.y, self.z)
             set_rotation_euler_bpy_object(camera_name, self.rx, self.ry, self.rz)
+
         else:
             raise ValueError(f'Not a valid creation mode {creation_mode}')
 

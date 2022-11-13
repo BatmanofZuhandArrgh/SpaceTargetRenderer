@@ -2,7 +2,7 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 
-from math import radians, cos, sin 
+from math import radians, cos, sin, sqrt
 
 def matrix_rotate_by_90(a):
     a.reverse()
@@ -69,8 +69,6 @@ def get_3dline_equation(pointA, pointB):
     #direction vector t
     dir_vector = pointB - pointA
     #r(t) = pointA + t*dir_vector
-    # print('Equation')
-    # print(pointA, pointB, dir_vector ) #TODO delete
     return pointA, dir_vector
 
 def get_random_point_on_3dline(pointA, pointB):
@@ -80,6 +78,47 @@ def get_random_point_on_3dline(pointA, pointB):
     '''
     x0_y0_z0, dir_vector = get_3dline_equation(pointA, pointB)
     return x0_y0_z0 + random.uniform(0,1) * dir_vector
+
+def get_sphere_equation(center, radius):
+    '''
+    vector form equation of a sphere, given center and radius: (point-center)^2 = radius^2 = point^2 -2*point*center + center^2
+    output: -2*center, center^2 - radius^2
+    '''
+    assert len(center) == 3, f"Invalid center for sphere with length {len(center)}"
+    return -2* center, np.square(center) - np.square(radius)
+
+def get_random_point_on_sphere(center, radius):
+    '''
+    Return random point on a sphere, given some value of its element
+    output: 3d point as np.array
+    '''
+    b, a = get_sphere_equation(center, radius)
+    # Let the point be (x,y,z), then 
+    # x^2 + x*b[0] + a[0] = 0
+    # y^2 + y*b[1] + a[1] = 0
+    # z^2 + z*b[2] + a[2] = 0 
+    raise NotImplementedError
+    return 
+
+def get_random_point_on_circle_xyplane(center, radius):
+    '''
+    Return random point on a 2d circle on the xy plane
+    input: 
+    - center: (x0, y0)
+    - radius: r
+    then (x - x0)^2 + (y - y0)^2 = r^2
+    output: 2d point as np.array
+    
+    '''
+    if center == (0,0):
+        #Then x^2 + y^2 = r^2
+        x_square = random.uniform(0, radius**2)
+        x = sqrt(x_square) * (2*(0.5 -bool(random.getrandbits(1)))) #randomly get the positive or negative 
+        y = sqrt(radius**2 - x_square) * (2*(0.5 -bool(random.getrandbits(1))))
+    else:
+        raise NotImplementedError
+
+    return (x, y)
 
 def plot_3d(point, line):
     fig = plt.figure(figsize=(4,4))

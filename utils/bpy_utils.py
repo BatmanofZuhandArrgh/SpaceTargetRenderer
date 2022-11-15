@@ -3,6 +3,7 @@ import random
 import numpy as np
 import bpy
 
+from math import radians
 from glob import glob
 
 from math_utils import get_random_rotation_offset
@@ -98,7 +99,6 @@ def get_bpy_camera_coordinates():
     camera = bpy.context.scene.camera
     return camera.location.x, camera.location.y, camera.location.z, \
         camera.rotation_euler.x, camera.rotation_euler.y, camera.rotation_euler.z
-
 
 def get_bpy_objnames_by_substring(substring):
     return [name for name in get_bpy_objnames() if substring.lower() in name.lower()]
@@ -325,7 +325,7 @@ def get_4x4_RT_matrix_from_blender(cam):
 def get_cam_angle_to_look_at(camera_name, point):
     #return angle (degree) needed to be set for camera to point to a target point
     obj_camera = bpy.data.objects[camera_name]
-    print(obj_camera.matrix_world)
+    
     loc_camera = obj_camera.matrix_world.to_translation()
 
     direction = point - loc_camera
@@ -341,7 +341,15 @@ if __name__ == '__main__':
 
     obj_camera.location = (5.0, 2.0, 3.0)
     bpy.context.view_layer.update()
-    
-    angles = get_cam_angle_to_look_at(obj_camera, obj_other.matrix_world.to_translation())
+
+    obj_camera.location = (5.0, 2.0, 3.0)
+    obj_camera.rotation_euler = (radians(90),0,0)
+    bpy.context.view_layer.update()
+    print(obj_camera.rotation_euler)
+    print([x * 180 / np.pi for x in obj_camera.rotation_euler])
+    print(obj_camera.matrix_local)
+    print(obj_camera.matrix_world)
+
+    angles = get_cam_angle_to_look_at("Camera", obj_other.matrix_world.to_translation())
+
     print(angles)
-    print([x * 180 / np.pi for x in angles])

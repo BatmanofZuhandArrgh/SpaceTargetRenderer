@@ -89,6 +89,7 @@ class RenderPipeline:
 
     def camera_setup_n_positioning(self, mode, creation_mode):
         self.camera_generator.create_camera(mode, creation_mode)
+        #Still ask if one wants to decouple/modularize this function (delete rotate_camera function for example)
         self.intrinsic_mat = self.camera_generator.get_intrinsic_matrix()
         self.extrinsic_mat = self.camera_generator.get_extrinsic_matrix()
 
@@ -103,7 +104,9 @@ class RenderPipeline:
         pass
 
     def camera_rotating(self):
-        self.camera_generator.rotate_by_90()
+        self.camera_generator.random_roll_cam()
+        self.intrinsic_mat = self.camera_generator.get_intrinsic_matrix()
+        self.extrinsic_mat = self.camera_generator.get_extrinsic_matrix()
     
     def space_target_positioning(self):
         '''
@@ -123,9 +126,7 @@ class RenderPipeline:
 
         self.st_coords_img = [self.intrinsic_mat.dot(coords[:-1]) for coords in self.st_coords_cam]
         self.st_coords_img = [((coord/coord[2]).astype(int))[:-1] for coord in self.st_coords_img]
-        print(self.intrinsic_mat)
-        print(self.st_coords_cam[0])
-        print(self.st_coords_img[0])
+
     def space_target_rotating(self):
         #Randomly rotating space targets
         for obj_name in self.cur_st_obj_names:
@@ -168,8 +169,8 @@ class RenderPipeline:
         # Opening WIP blend file path to append objects, if not start new one 
         if self.WIP_blend_file_path not in [None, ""]:
             bpy.ops.wm.open_mainfile(filepath=self.WIP_blend_file_path) 
-            self.background_generator.replace_cloud() #TODO  
-            # self.background_generator.randomize_bloom()        
+            # self.background_generator.replace_cloud() #TODO Uncomment this 
+            # self.background_generator.randomize_bloom()    #TODO FIX THIS    
         else:
             bpy.ops.wm.read_homefile(use_empty=True)
 
@@ -178,7 +179,8 @@ class RenderPipeline:
 
     def modify_environment(self, mode):
         if mode in ['empty_space_partial_earth', 'full_earth']:
-            self.background_generator.modify_earth()
+            # self.background_generator.modify_earth() #TODO Uncomment this
+            pass #TODO DELETE THIS
         elif mode == 'empty_space':
             pass
 
@@ -191,8 +193,8 @@ class RenderPipeline:
         for cycle in range(self.operational_config['num_cycle']):
             #For every cycle, create background, set up light and camera
             mode =  random.choice(self.modes)   
-            mode = 'empty_space_partial_earth' #_partial_earth' #TODO Delete this
-            mode = 'full_earth'
+            # mode = 'empty_space_partial_earth' #_partial_earth' #TODO Delete this
+            mode = 'empty_space_partial_earth'
 
             #Create temp filepath to save blend file
             with tempfile.NamedTemporaryFile() as tmp_file:
@@ -215,7 +217,7 @@ class RenderPipeline:
 
                     for view in range(self.operational_config['num_view_per_iter']):            
                         #For every view, space targets are repositioned and rotates.
-                        #Camera rotates by 90
+                        self.camera_rotating() #TODO Uncomment this
                         self.space_target_rotating()
                         self.space_target_positioning()  
                         self.space_target_updating()

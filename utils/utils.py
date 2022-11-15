@@ -7,3 +7,6 @@ def get_yaml(config_path):
         except yaml.YAMLError as exc:
             print(exc)
     return config_dict
+
+def dump_yaml(output_path):
+    pass

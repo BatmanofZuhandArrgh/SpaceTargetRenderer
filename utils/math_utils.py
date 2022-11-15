@@ -110,7 +110,7 @@ def get_random_point_on_circle_xyplane(center, radius):
     output: 2d point as np.array
     
     '''
-    if center == (0,0):
+    if center == (0,0, 0):
         #Then x^2 + y^2 = r^2
         x_square = random.uniform(0, radius**2)
         x = sqrt(x_square) * (2*(0.5 -bool(random.getrandbits(1)))) #randomly get the positive or negative 

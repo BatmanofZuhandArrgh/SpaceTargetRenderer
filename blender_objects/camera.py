@@ -6,7 +6,7 @@ import random
 from ast import literal_eval
 
 from utils.math_utils import get_random_point_on_3dpolygon, get_random_point_on_3dline, get_random_point_on_circle_xyplane
-from utils.bpy_utils import get_calibration_matrix_K_from_blender, get_4x4_RT_matrix_from_blender, show_bpy_objects
+from utils.bpy_utils import get_calibration_matrix_K_from_blender, get_4x4_RT_matrix_from_blender, show_bpy_objects, get_rotation_euler_bpy_object
 from utils.utils import get_yaml
 
 np.set_printoptions(suppress=True)
@@ -22,10 +22,13 @@ class CameraGenerator():
         #By default
         self.config_dict = config_dict
 
+        self.camera_name = config_dict['camera_name']
         self.x, self.y, self.z = None, None, None
         self.rx, self.ry, self.rz = None, None, None
         
         self.extrinsic_matrix = None
+        self.inv_intrinsic_matrix = None
+
         self.intrinsic_matrix = None
         self.inv_extrinsic_matrix = None
 
@@ -52,7 +55,7 @@ class CameraGenerator():
             camera_name = camera.name
             delete_bpy_object(camera_name)
     
-    def randomize_camera_position(self, camera_name):
+    def randomize_camera_position(self):
         '''
         Determine the location of camera orbiting around earth
         Output: return the location and rotation of camera that can capture a perfect frame
@@ -63,42 +66,44 @@ class CameraGenerator():
         #2. We wil only orbit the camera around the equator of earth, where it can capture a frame with light
         #So the camera will only be on 1 plane, where self.z = 0
         z = 0
-        x, y = get_random_point_on_circle_xyplane(self.earth_center, radius=distance)
+        x, y = get_random_point_on_circle_xyplane(tuple(self.earth_center), radius=distance)
         #TODO update this with a function limiting the position, not too far back behind earth
-        
-        set_location_bpy_object(camera_name, x, y, z)
-        
 
-        return
+        x, y, z = 0, -900, -0
+        rx, ry, rz = radians(90), radians(90), radians(0)
+        set_location_bpy_object(self.camera_name, x, y, z) #TODO DELETE THIS
+        set_rotation_euler_bpy_object(self.camera_name, rx, ry, rz) #TODO DELETE THIS
+        
+        #3. Rotate the camera so within a limit of its existence 
+
 
     def create_camera(self, mode, creation_mode = 'create'):
         '''
         Create or import a camera. There should be only 1 camera
         '''
-        camera_name = "Camera"
 
         if creation_mode == "import":            
             if mode == 'full_earth':
                 #randomize camera distance from earth surface
                 distance = random.uniform(-self.cam_range['distance'][0], -self.cam_range['distance'][1])
-                set_location_bpy_object(camera_name, 0, distance, 0)
-                set_rotation_euler_bpy_object(camera_name, radians(90), radians(90), radians(0))
+                set_location_bpy_object(self.camera_name, 0, distance, 0)
+                set_rotation_euler_bpy_object(self.camera_name, radians(90), radians(90), radians(0))
 
             elif mode == 'empty_space_partial_earth':
-                self.randomize_camera_position(camera_name)
+                self.randomize_camera_position()
 
             else:
                 raise ValueError(f'Not a valid mode {mode}')
 
-            #Assuming the WIP blenderscene has already got a well setup camera, named "Camera"
+            #Assuming the WIP blenderscene has already got a well setup camera, named "Camera" #TODO low priority, rename the object as Camera if name not Camera
             self.x, self.y, self.z, self.rx, self.ry, self.rz = \
                 get_bpy_camera_coordinates()
 
         elif creation_mode == 'create':
             self.delete_existing_cameras()
             #Only ever create 1 camera. Current camera must be deleted before making another one
-            camera_data = bpy.data.cameras.new(name=camera_name)
-            camera_object = bpy.data.objects.new(camera_name, camera_data)
+            camera_data = bpy.data.cameras.new(name=self.camera_name)
+            camera_object = bpy.data.objects.new(self.camera_name, camera_data)
             bpy.context.scene.collection.objects.link(camera_object)
             bpy.context.scene.camera = camera_object
 
@@ -123,8 +128,8 @@ class CameraGenerator():
             else:
                 raise ValueError(f'Not a valid mode {mode}')
             
-            set_location_bpy_object(camera_name, self.x, self.y, self.z)
-            set_rotation_euler_bpy_object(camera_name, self.rx, self.ry, self.rz)
+            set_location_bpy_object(self.camera_name, self.x, self.y, self.z)
+            set_rotation_euler_bpy_object(self.camera_name, self.rx, self.ry, self.rz)
 
         else:
             raise ValueError(f'Not a valid creation mode {creation_mode}')
@@ -132,10 +137,23 @@ class CameraGenerator():
         self.set_extrinsic_matrix()
         self.set_intrinsic_matrix()
 
-    def rotate_by_90(self):
-        self.rz += radians(90)
-        rotate_bpy_object("Camera", 0, 0, radians(90))
-          
+    def random_roll_cam(self):
+        #Rolling camera along its x-axis (outward axis)
+        print('Rolling cam')
+        #Getting extrinsic matrix from blender, not from calculated function get_4x4_RT_matrix_from_blender
+        cam_obj = bpy.data.objects[self.camera_name]
+        cam2world_mat = np.linalg.inv(np.array(cam_obj.matrix_world))[:3,:3]
+        
+        #Angle we want for the camera to roll along its x axis (It does not yaw or pitch), angle velocity (m/s) 
+        omega = np.array([radians(np.random.uniform(low=0, high = 180, size=(1,))),0,0])
+        rotation_diff = cam2world_mat.dot(omega)
+
+        rotate_bpy_object(self.camera_name, rotation_diff[0], rotation_diff[1], rotation_diff[2])
+        self.rx, self.ry, self.rz = get_rotation_euler_bpy_object(self.camera_name)
+
+        self.set_extrinsic_matrix()
+        self.set_intrinsic_matrix()
+
     def get_cam_location(self):
         #Return location set by camera generator
         return self.x, self.y, self.z
@@ -145,11 +163,14 @@ class CameraGenerator():
         return self.rx, self.ry, self.rz
 
     def set_extrinsic_matrix(self):
-        self.extrinsic_matrix = get_4x4_RT_matrix_from_blender(bpy.data.objects['Camera'])
+        #Needs to reset everytime the camera is moved or rotated
+        self.extrinsic_matrix = get_4x4_RT_matrix_from_blender(bpy.data.objects[self.camera_name])
         self.inv_extrinsic_matrix = np.linalg.inv(self.extrinsic_matrix)
 
     def set_intrinsic_matrix(self):
+        #Needs to reset everytime the camera is moved or rotated
         self.intrinsic_matrix = get_calibration_matrix_K_from_blender()
+        # self.inv_intrinsic_matrix = np.linalg.inv(self.intrinsic_matrix) #Not used
 
     def get_extrinsic_matrix(self):
         return self.extrinsic_matrix
@@ -162,7 +183,7 @@ class CameraGenerator():
 
     def move_camera(self, x_offset, y_offset, z_offset):
         # By default there should only be 1 camera named "Camera"
-        move_bpy_object("Camera", x_offset, y_offset, z_offset)
+        move_bpy_object(self.camera_name, x_offset, y_offset, z_offset)
     
     def get_camera_coordinates(self):
         return self.get_cam_location() + self.get_cam_rotation() 

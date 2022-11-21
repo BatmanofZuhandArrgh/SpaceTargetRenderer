@@ -3,8 +3,9 @@ import random
 import numpy as np
 import bpy
 
-from math import radians
-from glob import glob
+# from math import radians
+# from glob import glob
+from mathutils import Vector
 
 from math_utils import get_random_rotation_offset
 
@@ -122,12 +123,13 @@ def move_bpy_object(object_name, x_offset, y_offset, z_offset):
     obj.location.x += x_offset
     obj.location.y += y_offset
     obj.location.z += z_offset
+    bpy.context.view_layer.update()
 
 def rotate_bpy_object(object_name, x_offset, y_offset, z_offset):
     obj = bpy.data.objects[object_name]
-    obj.rotation_euler.x += x_offset
-    obj.rotation_euler.y += y_offset
-    obj.rotation_euler.z += z_offset
+    rx, ry, rz = obj.rotation_euler
+    obj.rotation_euler = (x_offset + rx, y_offset + ry, z_offset + rz)
+    bpy.context.view_layer.update()
 
 def random_rotate_bpy_object(object_name):
     set_rotation_euler_bpy_object(object_name, get_random_rotation_offset(), get_random_rotation_offset(), get_random_rotation_offset())
@@ -136,7 +138,6 @@ def set_location_bpy_object(object_name, x, y, z):
     obj = bpy.data.objects[object_name]
     obj.location = (x, y, z)
     bpy.context.view_layer.update()
-
 
 def set_rotation_euler_bpy_object(object_name, x, y, z):
     obj = bpy.data.objects[object_name]
@@ -154,6 +155,7 @@ def get_location_bpy_object(object_name):
 
 def get_rotation_euler_bpy_object(object_name):
     obj = bpy.data.objects[object_name]
+    #Return in radians
     return obj.rotation_euler
 
 def get_dimensions_bpy_object(object_name):
@@ -328,12 +330,13 @@ def get_cam_angle_to_look_at(camera_name, point):
     
     loc_camera = obj_camera.matrix_world.to_translation()
 
-    direction = point - loc_camera
+    direction = Vector(point) - loc_camera
     # point the cameras '-Z' and use its 'Y' as up
     rot_quat = direction.to_track_quat('-Z', 'Y')
 
     # assume we're using euler rotation
-    return [x * 180 / np.pi for x in rot_quat.to_euler()]
+    euler_rotation =  [x * 180 / np.pi for x in rot_quat.to_euler()]
+    return euler_rotation
 
 if __name__ == '__main__':
     obj_camera = bpy.data.objects["Camera"]
@@ -342,13 +345,13 @@ if __name__ == '__main__':
     obj_camera.location = (5.0, 2.0, 3.0)
     bpy.context.view_layer.update()
 
-    obj_camera.location = (5.0, 2.0, 3.0)
-    obj_camera.rotation_euler = (radians(90),0,0)
-    bpy.context.view_layer.update()
-    print(obj_camera.rotation_euler)
-    print([x * 180 / np.pi for x in obj_camera.rotation_euler])
-    print(obj_camera.matrix_local)
-    print(obj_camera.matrix_world)
+    # obj_camera.location = (5.0, 2.0, 3.0)
+    # obj_camera.rotation_euler = (radians(90),0,0)
+    # bpy.context.view_layer.update()
+    # print(obj_camera.rotation_euler)
+    # print([x * 180 / np.pi for x in obj_camera.rotation_euler])
+    # print(obj_camera.matrix_local)
+    # print(obj_camera.matrix_world)
 
     angles = get_cam_angle_to_look_at("Camera", obj_other.matrix_world.to_translation())
 

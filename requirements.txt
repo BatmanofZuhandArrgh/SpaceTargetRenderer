@@ -2,3 +2,6 @@
 PyYAML==6.0
 matplotlib
 opencv-python
+scikit-spatial
+https://github.com/majimboo/py-mathutils/archive/2.78a.zip
+#From https://github.com/majimboo/py-mathutils

@@ -97,14 +97,14 @@ class RenderPipeline:
         if mode =='empty_space':
             return
         elif mode in  ['empty_space_partial_earth', 'full_earth']:
+            self.background_generator.replace_cloud() 
             center, radius = self.background_generator.get_earth_data()
             self.camera_generator.update_earth_data(center, radius)
 
-    def camera_positioning(self, position):
-        pass
-
-    def camera_rotating(self):
-        self.camera_generator.random_roll_cam()
+    def camera_rotating(self, mode):
+        if mode != 'full_earth':
+            self.camera_generator.randomize_camera_rotation()
+        self.camera_generator.randomize_camera_roll()
         self.intrinsic_mat = self.camera_generator.get_intrinsic_matrix()
         self.extrinsic_mat = self.camera_generator.get_extrinsic_matrix()
     
@@ -169,7 +169,6 @@ class RenderPipeline:
         # Opening WIP blend file path to append objects, if not start new one 
         if self.WIP_blend_file_path not in [None, ""]:
             bpy.ops.wm.open_mainfile(filepath=self.WIP_blend_file_path) 
-            # self.background_generator.replace_cloud() #TODO Uncomment this 
             # self.background_generator.randomize_bloom()    #TODO FIX THIS    
         else:
             bpy.ops.wm.read_homefile(use_empty=True)
@@ -179,8 +178,7 @@ class RenderPipeline:
 
     def modify_environment(self, mode):
         if mode in ['empty_space_partial_earth', 'full_earth']:
-            # self.background_generator.modify_earth() #TODO Uncomment this
-            pass #TODO DELETE THIS
+            self.background_generator.modify_earth() #TODO Uncomment this
         elif mode == 'empty_space':
             pass
 
@@ -193,8 +191,8 @@ class RenderPipeline:
         for cycle in range(self.operational_config['num_cycle']):
             #For every cycle, create background, set up light and camera
             mode =  random.choice(self.modes)   
-            # mode = 'empty_space_partial_earth' #_partial_earth' #TODO Delete this
-            mode = 'empty_space_partial_earth'
+            # mode = 'empty_space_partial_earth' #_partial_earth'
+            # mode = 'full_earth'
 
             #Create temp filepath to save blend file
             with tempfile.NamedTemporaryFile() as tmp_file:
@@ -217,7 +215,7 @@ class RenderPipeline:
 
                     for view in range(self.operational_config['num_view_per_iter']):            
                         #For every view, space targets are repositioned and rotates.
-                        self.camera_rotating() #TODO Uncomment this
+                        self.camera_rotating(mode) #TODO Uncomment this
                         self.space_target_rotating()
                         self.space_target_positioning()  
                         self.space_target_updating()

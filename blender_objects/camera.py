@@ -76,14 +76,13 @@ class CameraGenerator():
             if y < 0:
                 is_on_brightside = True
 
-        # x, y, z = 0, -1800, -0 #TODO DELETE THIS
-        # # rx, ry, rz = radians(90), radians(90), radians(0) #TODO DELETE THIS
-
         set_location_bpy_object(self.camera_name, x, y, z)  
-        self.x, self.y, self.z = x, y, z        
+        self.x, self.y, self.z = x, y, z    
+        
+        self.set_camera_matrices()
 
     def randomize_camera_rotation(self):
-        #3. Rotate the camera so within a limit of its existence 
+        #3. Rotate the camera so within a limit of its field of view that still can capture part of the earth 
         # _, _, tangent_point = get_random_tangent_point_between_point_n_sphere(center=self.earth_center, radius=self.earth_radius, given_point=(x, y, z))
         random_directing_point = get_random_point_within_intersecting_tangent_circle_between_point_n_sphere(sphere_center=self.earth_center, sphere_radius=self.earth_radius, given_point=(self.x, self.y, self.z))
         rx, ry, rz = get_cam_angle_to_look_at(self.camera_name, random_directing_point)
@@ -91,22 +90,43 @@ class CameraGenerator():
         
         set_rotation_euler_bpy_object(self.camera_name, rx, ry, rz)
         self.rx, self.ry, self.rz = rx, ry, rz
+        
+        self.set_camera_matrices()
+
+    def randomize_camera_roll(self):
+        #Rolling camera along its x-axis (outward axis)
+        #https://blender.stackexchange.com/questions/78485/rotate-camera-using-eulers
+        select_bpy_object(self.camera_name)
+        roll_angle = random.uniform(0, 360)
+        bpy.ops.transform.rotate(value=roll_angle, constraint_axis=(False, False, True), orient_type='LOCAL', mirror=False,  proportional_edit_falloff='SMOOTH', proportional_size=1)
+        
+        deselect_bpy_object()
+        bpy.context.view_layer.update()
+
+        self.rx, self.ry, self.rz = self.get_cam_rotation()
+
+        self.set_camera_matrices()
+
+    def point_camera_to_center_of_earth(self):
+        angles = get_cam_angle_to_look_at(self.camera_name, self.earth_center)
+
+        set_rotation_euler_bpy_object(self.camera_name, radians(angles[0]), radians(angles[1]), radians(angles[2]))
+        self.rx, self.ry, self.rz = self.get_cam_rotation()
+        self.set_camera_matrices()
 
     def create_camera(self, mode, creation_mode = 'create'):
         '''
         Create or import a camera. There should be only 1 camera
+        Then define a random location of camera
         '''
-
         if creation_mode == "import":            
             if mode == 'full_earth':
-                #randomize camera distance from earth surface #TODO Randomize camera position as well
-                distance = random.uniform(-self.cam_range['distance'][0], -self.cam_range['distance'][1])
-                set_location_bpy_object(self.camera_name, 0, distance, 0)
-                set_rotation_euler_bpy_object(self.camera_name, radians(90), radians(90), radians(0))
+                #randomize camera distance from earth surface
+                self.randomize_camera_location()
+                self.point_camera_to_center_of_earth()
 
             elif mode == 'empty_space_partial_earth':
                 self.randomize_camera_location()
-                self.randomize_camera_rotation()
 
             else:
                 raise ValueError(f'Not a valid mode {mode}')
@@ -121,13 +141,13 @@ class CameraGenerator():
             camera_object = bpy.data.objects.new(self.camera_name, camera_data)
             bpy.context.scene.collection.objects.link(camera_object)
             bpy.context.scene.camera = camera_object
-
+            
+            #Default position
             if mode == 'empty_space':
                 self.x, self.y, self.z = 7.3589, -6.9258, 4.9583
                 self.rx, self.ry, self.rz = radians(63.6), 0, radians(46.7)
 
             elif mode == 'empty_space_partial_earth':
-                #TODO edit general camera positioning
                 #For earth_v1
                 # self.x, self.y, self.z = 3.0638, -8.9029, -2.1132
                 # self.rx, self.ry, self.rz = radians(89.6), radians(0), radians(89.6)
@@ -149,22 +169,7 @@ class CameraGenerator():
         else:
             raise ValueError(f'Not a valid creation mode {creation_mode}')
 
-        self.set_extrinsic_matrix()
-        self.set_intrinsic_matrix()
-
-    def random_roll_cam(self):
-        #Rolling camera along its x-axis (outward axis)
-        #https://blender.stackexchange.com/questions/78485/rotate-camera-using-eulers
-        self.randomize_camera_rotation()
-
-        select_bpy_object(self.camera_name)
-        bpy.ops.transform.rotate(value=90, constraint_axis=(False, False, True), orient_type='LOCAL', mirror=False,  proportional_edit_falloff='SMOOTH', proportional_size=1)
-        
-        deselect_bpy_object()
-        bpy.context.view_layer.update()
-
-        self.set_extrinsic_matrix()
-        self.set_intrinsic_matrix()
+        self.set_camera_matrices()
 
     def get_cam_location(self):
         #Return location set by camera generator
@@ -184,6 +189,11 @@ class CameraGenerator():
         self.intrinsic_matrix = get_calibration_matrix_K_from_blender()
         # self.inv_intrinsic_matrix = np.linalg.inv(self.intrinsic_matrix) #Not used
 
+    def set_camera_matrices(self):
+        #Needs to be updated everytime the location or rotation of camera changes
+        self.set_extrinsic_matrix()
+        self.set_intrinsic_matrix()
+    
     def get_extrinsic_matrix(self):
         return self.extrinsic_matrix
     

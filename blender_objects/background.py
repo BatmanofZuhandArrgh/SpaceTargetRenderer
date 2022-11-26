@@ -23,12 +23,13 @@ class BackgroundGenerator():
     def replace_cloud(self):
         cloud_texture_paths = [path for path in os.listdir(self.earth_dict['cloud_texture']) if '.'+path.split('.')[-1].lower() in IMG_EXT]
         new_cloud_texture_path = os.path.join(self.earth_dict['cloud_texture'], random.choice(cloud_texture_paths))
-
-        replace_img_texture(
-            obj_name="Cloud", 
-            image_path = new_cloud_texture_path, 
-            )
-    
+        
+        if random.randint(0,2) != 3:
+            replace_img_texture(
+                obj_name="Cloud", 
+                image_path = new_cloud_texture_path, 
+                )
+        
     def rotate_cloud(self):
         random_rotate_bpy_object("Cloud")
 

@@ -163,7 +163,6 @@ class RenderPipeline:
     def delete_all_space_targets(self):
         delete_bpy_objects_by_name_substring('st_')             
         delete_bpy_objects_by_name_substring('cube')
-        pass
     
     def init_blend(self):     
         # Opening WIP blend file path to append objects, if not start new one 
@@ -177,6 +176,8 @@ class RenderPipeline:
         set_render_img_size(self.img_size)
 
     def modify_environment(self, mode):
+        self.light_generator.randomize_light_strength()
+
         if mode in ['empty_space_partial_earth', 'full_earth']:
             self.background_generator.modify_earth() #TODO Uncomment this
         elif mode == 'empty_space':

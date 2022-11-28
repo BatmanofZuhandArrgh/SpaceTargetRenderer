@@ -48,5 +48,12 @@ At the start of every cycle:
     b. Position them and the camera pointing towards them
     c. Render -> back to b.(For every view), or 4. (For every iteration), or 1. (For every cycle).
  
+
+Data Generation study:
+CoCo object detection (2017) dataset contain 118000 of labelled images for training and 5000 labelled images for validation.
+First we generate fully synthesized test set with full variety, randomized all space targets
+The purpose is for later research to understand which element is needed for training a generalized model, and which can be without
+1. Generation mode:
+Test yolov7 between 
 IV. Domain adaptation
 

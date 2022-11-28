@@ -1,4 +1,5 @@
 import bpy
+import numpy as np
 from math import radians
 from ast import literal_eval
 
@@ -10,12 +11,25 @@ class LightGenerator():
 
         self.x, self.y, self.z = None, None, None
         self.rx, self.ry, self.rz = None, None, None
+        self.light_name = config_dict['light_name']
+        self.strength_range = None 
     
     def delete_existing_light(self): 
         existing_lights = [ob for ob in list(bpy.context.scene.objects) if ob.type == 'LIGHT']
         for light in existing_lights:
             light_name = light.name
             delete_bpy_object(light_name)
+    
+    def randomize_light_strength(self, mode):
+        light_obj = bpy.data.objects[self.light_name]
+        light_data = light_obj.data
+
+        if mode == 'empty_space':
+            self.strength_range = (1, 60)
+        elif mode in ['full_earth', 'empty_space_partial_earth']:
+            self.strength_range = (1, 60)
+
+        light_data.energy = np.random.uniform(low=self.strength_range[0], high=self.strength_range[1], size=None)
 
     def create_light(
         self, 
@@ -43,8 +57,10 @@ class LightGenerator():
                 strength=self.config_dict['strength'],
                 radius=self.config_dict['radius'],
                 self.x, self.y, self.z=literal_eval(self.config_dict['location'])
-                self.rx, self.ry, self.rz=literal_eval(self.config_dict['rotation'])
-            
+                
+                rotations = literal_eval(self.config_dict['rotation'])
+                self.rx, self.ry, self.rz= radians(rotations[0]),radians(rotations[1]),radians(rotations[2])
+
             elif mode == 'empty_space':
                 self.x, self.y, self.z = 4,1,6
                 self.rx, self.ry, self.rz = radians(37.3), radians(3.16), radians(107)
@@ -70,7 +86,7 @@ class LightGenerator():
             #already linked to collection
             light_obj = bpy.context.active_object
             light = light_obj.data
-            light.name = type[0].upper() + type[1:].lower()
+            light.name = self.light_name
             light.angle = angle
             light.energy = strength
             light.specular_factor = specular

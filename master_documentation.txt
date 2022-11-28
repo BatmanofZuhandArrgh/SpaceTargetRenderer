@@ -51,9 +51,33 @@ At the start of every cycle:
 
 Data Generation study:
 CoCo object detection (2017) dataset contain 118000 of labelled images for training and 5000 labelled images for validation.
-First we generate fully synthesized test set with full variety, randomized all space targets
-The purpose is for later research to understand which element is needed for training a generalized model, and which can be without
-1. Generation mode:
+With the same set up, for the final model we would generate a final dataset of maximum 120000 images for training, 
+split 90/10 from the set for validation and 10000 images for synthesize testing. For the specific amount of space target generated, we will experiment
+
+First we generate fully synthesized test set with full variety, randomized all lighting, camera, space targets and background conditions
+The purpose is for later researcher to understand which condition customization is needed for training a generalized model, and which is not needed.
+For faster training for this study, we will use a relatively small and quickly-trained model. Then once we have found the best training condition, we will use a large model and compare model architectures.
+1. Generation mode
+- Empty space vs. Partial and Full Earth
+- A dataset of 2000 images
+- Generating the Earth is a huge computational overhead. So if we could just 
+
+2. Number of cubesats
+- Most realistic images of cubesats in real life only have 1 or maximum 6 or 7 cubesats. In the object detection image synthesization from GTA paper, it created 20-30 objects.
+- We want to test which creates a better detection model, closed to real life or create a hard scenario with a lot of occlusion for the model. Also generating more objects create more computational overhead
+- 1-6 cubesats/space targets vs 20-30 cubesats/space targets
+- A dataset of 2000 images 
+
+3. Effect of space target textures
+- No texture (simple color) plain grey albedo vs various texture 
+
+4. Number of images to trained on
+- 2000, 10000, 100000
+
+5. Other generation conditions:
+- lighting strength
+- cubesat and spacetarget's texture
+
 Test yolov7 between 
 IV. Domain adaptation
 

@@ -28,8 +28,7 @@ class LightGenerator():
             self.strength_range = (1, 200)
         elif mode in ['full_earth', 'empty_space_partial_earth']:
             self.strength_range = (1, 60)
-        print('HERE')
-        print(np.random.uniform(low=self.strength_range[0], high=self.strength_range[1], size=None))
+            
         light_data.energy = np.random.uniform(low=self.strength_range[0], high=self.strength_range[1], size=None)
 
     def create_light(

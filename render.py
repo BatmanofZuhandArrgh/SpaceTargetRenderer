@@ -193,7 +193,7 @@ class RenderPipeline:
             #For every cycle, create background, set up light and camera
             mode =  random.choice(self.modes)   
             # mode = 'empty_space_partial_earth' #_partial_earth'
-            mode = 'empty_space'
+            # mode = 'empty_space'
 
             #Create temp filepath to save blend file
             with tempfile.NamedTemporaryFile() as tmp_file:
@@ -224,15 +224,17 @@ class RenderPipeline:
                         
                         # render_region() #Does not work, increase cloud generation time
                         
-                        #Render                         
-                        img_path = os.path.join(self.output_dir,f'c{cycle}_i{iter}_v{view}')
+                        #Render      
+                        image_dir = os.path.join(self.output_dir, 'images')                   
+                        os.makedirs(image_dir, exist_ok=True)
+                        img_path = os.path.join(image_dir,f'c{cycle}_i{iter}_v{view}')
                         bpy.ops.wm.save_mainfile(filepath=blend_file_path)
                         
                         parameters = [self.blender_exe, '-b', blend_file_path, '-o', img_path,'--engine', self.blender_engine,'-f', '1']
                         subprocess.call(parameters)
                         render_imgs += 1 
                         
-                        #Draw bounding box
+                        #Output bounding box
                         img_path = os.path.splitext(img_path)[0] + '0001.png'
                         cur_img = cv2.imread(img_path)
                         labels = []
@@ -240,14 +242,18 @@ class RenderPipeline:
                             center_coord = self.cur_st_objs[name].img_coord
                             bbox_width = self.cur_st_objs[name].bbox[1][0] - self.cur_st_objs[name].bbox[0][0]
                             bbox_height = self.cur_st_objs[name].bbox[1][1] - self.cur_st_objs[name].bbox[0][1]
-
-                            # cv2.circle(cur_img, (center_coord[0], center_coord[1]), radius=2, color=(0,0, 255), thickness=2)
+                            
+                            '''
+                            #Drawing bounding boxes
+                            cv2.circle(cur_img, (center_coord[0], center_coord[1]), radius=2, color=(0,0, 255), thickness=2)
                             for coord in self.cur_st_objs[name].vertices_coords_img:
                                 cv2.circle(cur_img, coord, radius=2, color=(0,0, 255), thickness=1)
-                                # cur_img = cv2.putText(cur_img, str(coord[0])+'-'+str(coord[1]), coord, cv2.FONT_HERSHEY_SIMPLEX, 
-                                #                                     0.5, (255,0,0), 1, cv2.LINE_AA)
+                                cur_img = cv2.putText(cur_img, str(coord[0])+'-'+str(coord[1]), coord, cv2.FONT_HERSHEY_SIMPLEX, 
+                                                                    0.5, (255,0,0), 1, cv2.LINE_AA)
 
                             cur_img = cv2.rectangle(cur_img, self.cur_st_objs[name].bbox[0], self.cur_st_objs[name].bbox[1], color =(255,0, 0), thickness = 2)
+                            '''
+
                             label = [
                                 str(self.label_dict[self.cur_st_objs[name].cls_type]), 
                                 str(round(center_coord[0]/self.img_size[0], 2)), 
@@ -261,7 +267,9 @@ class RenderPipeline:
 
                         #Output text
                         txt_name = os.path.splitext(os.path.basename(img_path))[0] + '.txt'
-                        txt_path = os.path.join(self.output_dir, txt_name)
+                        label_dir = os.path.join(self.output_dir, 'labels')                   
+                        os.makedirs(label_dir, exist_ok=True)
+                        txt_path = os.path.join(label_dir, txt_name)
 
                         with open(txt_path, 'w') as f:
                             f.write('\n'.join(labels))

@@ -6,13 +6,12 @@ from utils.utils import get_yaml, dump_yaml
 
 def main():
 
-    config_paths = glob.glob('./*.yaml')
+    config_paths = glob.glob('./pipeline_config_study/**/*.yaml', recursive=True)
     for config_path in config_paths:
-        config = get_yaml(config_path=config_path)
-        pprint(config)
-    #     pipeline = RenderPipeline(config_path=config_path)
+        print(config_path)
+        pipeline = RenderPipeline(config_path=config_path)
 
-    #     pipeline.render()
+        pipeline.render()
 
 if __name__ == '__main__':
     main()

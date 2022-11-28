@@ -102,7 +102,7 @@ class RenderPipeline:
             self.camera_generator.update_earth_data(center, radius)
 
     def camera_rotating(self, mode):
-        if mode != 'full_earth':
+        if mode == 'empty_space_partial_earth':
             self.camera_generator.randomize_camera_rotation()
         self.camera_generator.randomize_camera_roll()
         self.intrinsic_mat = self.camera_generator.get_intrinsic_matrix()
@@ -176,7 +176,7 @@ class RenderPipeline:
         set_render_img_size(self.img_size)
 
     def modify_environment(self, mode):
-        self.light_generator.randomize_light_strength()
+        self.light_generator.randomize_light_strength(mode)
 
         if mode in ['empty_space_partial_earth', 'full_earth']:
             self.background_generator.modify_earth() #TODO Uncomment this
@@ -193,7 +193,7 @@ class RenderPipeline:
             #For every cycle, create background, set up light and camera
             mode =  random.choice(self.modes)   
             # mode = 'empty_space_partial_earth' #_partial_earth'
-            # mode = 'full_earth'
+            mode = 'empty_space'
 
             #Create temp filepath to save blend file
             with tempfile.NamedTemporaryFile() as tmp_file:

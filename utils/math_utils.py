@@ -148,7 +148,7 @@ def get_point_further_than_tangent_point(coord_H, tangent_point, ratio = 1.15):
     coord_H0 =  coord_H + dir_vector * ratio
     return coord_H0
 
-def get_random_point_within_intersecting_tangent_circle_between_point_n_sphere(sphere_center, sphere_radius, given_point, ratio_high = 1.4):
+def get_random_point_within_intersecting_tangent_circle_between_point_n_sphere(sphere_center, sphere_radius, given_point, ratio_high = 1.7):
     circle_center, circle_radius, random_tangent_point = get_random_tangent_point_between_point_n_sphere(sphere_center, sphere_radius, given_point)
     circle_center, dir_vector = get_3dline_equation(circle_center, random_tangent_point)
     

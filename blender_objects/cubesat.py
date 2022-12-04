@@ -40,10 +40,11 @@ class CubeSat(SpaceTarget):
         vert_coords_img   = [cam_intrinsic_mat.dot(ver[:-1]) for ver in vert_coords_cam]
         self.vertices_coords_img  = [(ver/ver[-1]).astype(int)[:-1] for ver in vert_coords_img]
 
-    def update_bbox(self, cam_intrinsic_mat, cam_extrinsic_mat):
+    def update_bbox(self, cam_intrinsic_mat, cam_extrinsic_mat, img_size):
+        img_width, img_height = img_size
         self.update_vertices(cam_intrinsic_mat, cam_extrinsic_mat)
         xs = [ver[0] for ver in self.vertices_coords_img]
         ys = [ver[1] for ver in self.vertices_coords_img]
-        upper_left = (min(xs), min(ys))
-        bottom_right = (max(xs), max(ys))
+        upper_left = ( max(0, min(xs)), max(0, min(ys)))
+        bottom_right = ( min(img_width - 1, max(xs)), min(img_height - 1, max(ys)))
         self.bbox = (upper_left, bottom_right)

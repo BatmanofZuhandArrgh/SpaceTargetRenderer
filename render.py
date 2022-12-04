@@ -141,9 +141,9 @@ class RenderPipeline:
                 img_coord = self.st_coords_img[i]
             )
 
-            self.cur_st_objs[self.cur_st_obj_names[i]].update_bbox(self.intrinsic_mat, self.extrinsic_mat)
+            self.cur_st_objs[self.cur_st_obj_names[i]].update_bbox(self.intrinsic_mat, self.extrinsic_mat, img_size = self.img_size)
 
-    
+
         self.remove_overlapping_objs()
         
     def remove_overlapping_objs(self, overlap_thres = 0.75):

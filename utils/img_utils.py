@@ -7,16 +7,40 @@ UV_DEFAULT_SHAPE = (1024,1024,3)
 SINGLE_SIDE_LEN = int(UV_DEFAULT_SHAPE[0]//8)
 IMG_EXT = ['.jpg', '.jpeg', '.png']
 
+def get_random_color(too_dark_sum_threshold = 100):
+    while True:
+        color = [random.randint(0,255),random.randint(0,255), random.randint(0,255)]
+        if sum(color) > too_dark_sum_threshold: #So it wouldn't be too dark on a space background
+            return tuple(color)
+
+def get_solid_color_img(color, height = 1024, width=1024, channels = 3):
+    return np.full((height, width, channels), color, dtype=np.uint8)
+
 def img_random_rotate_by_90(matrix):
     if bool(random.getrandbits(1)):
         return np.rot90(matrix) 
     return matrix 
 
-def stitching_upwrapped_texture(single_side_texture_path, obj_type, output_path):
+def get_border_square(single_side, color):
 
+    height, width, channel = single_side.shape
+    border_width_percentage = random.uniform(0.01, 0.1)
+    border_width = int(border_width_percentage * min(height, width))
+
+    single_side = cv2.copyMakeBorder(single_side, border_width, border_width, border_width, border_width, \
+        cv2.BORDER_CONSTANT, None, value = color)
+    return single_side
+
+def stitching_upwrapped_texture(single_side_texture_path, obj_type, output_path):
+    # print('STITCHING')
     single_side = cv2.imread(single_side_texture_path)
     uv_arr  = np.random.normal(0,255,UV_DEFAULT_SHAPE)
     
+    if bool(random.getrandbits(1)): #50% chance of getting borders
+        # print('GGGGGGGGGGGetting borders')
+        border_color = get_random_color(too_dark_sum_threshold= 10)
+        single_side = get_border_square(single_side, border_color) 
+
     #Cut a square out of the original single side image, if it's not already a square
     if single_side.shape[0] != single_side.shape[1]:
         min_size = min(single_side.shape[0], single_side.shape[1])    

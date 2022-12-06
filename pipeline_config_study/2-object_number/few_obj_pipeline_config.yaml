@@ -1,6 +1,6 @@
 blender_exe: ../../Downloads/blender-2.82-linux64/blender
 blender_engine: BLENDER_EEVEE
-output_dir: ../synthetic_dataset/fewobj_dataset/
+output_dir: ../synthetic_dataset/fewobj_dataset/train
 label_dict: ./annotation/OBJ_CLS.yaml
 WIP_blend_file_path:
 

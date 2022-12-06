@@ -69,15 +69,14 @@ For faster training for this study, we will use a relatively small and quickly-t
 - A dataset of 2000 images 
 
 3. Effect of space target textures
-- No texture (simple color) plain grey albedo vs various texture 
+- No texture (simple color) (plain grey albedo) vs various texture 
 
 4. Number of images to trained on
 - 2000, 10000, 100000
 
 5. Other generation conditions:
 - lighting strength
-- cubesat and spacetarget's texture
-
+- image synthesize
 Test yolov7 between 
 IV. Domain adaptation
 

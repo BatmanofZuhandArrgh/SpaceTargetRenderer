@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 
 from math import radians, cos, sin, sqrt
 
+def clamp(min_value, num, max_value):
+   return max(min(num, max_value), min_value)
+   
 def degrees(radian):
     return radian * 180 / np.pi
     

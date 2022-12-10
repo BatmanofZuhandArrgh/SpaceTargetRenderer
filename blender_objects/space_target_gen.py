@@ -119,13 +119,7 @@ class SpaceTargetGenerator():
 
             obj = bpy.data.objects.get(object_name)
             obj.name = 'ST_' + obj_type + '_' + object_name + f'_{i}'
-            set_bpy_obj_origin(obj.name, centering_mode = "ORIGIN_GEOMETRY") #Since some of the obj doesn't have the origin as the geometry center already
-
-            #Scale cuz the ot_sts are sometimes too small or too big
-            obj_dimension = np.array(obj.dimensions)
-            scale_ratio = 2 / min(obj_dimension) # 2m is the dimension of a default cube in blender
-            obj.dimensions = (obj_dimension[0]* scale_ratio, obj_dimension[1]* scale_ratio, obj_dimension[2]* scale_ratio)
-            bpy.context.view_layer.update()
+            set_bpy_obj_origin(obj.name, centering_mode = "ORIGIN_GEOMETRY", center="BOUNDS") #Since some of the obj doesn't have the origin as the geometry center already
 
             add_image_texture(obj, mat=mat)
 

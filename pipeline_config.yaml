@@ -49,7 +49,7 @@ camera:
     distance: (900, 1800)
 
 space_targets:
-  range_num_obj: (1,2) 
+  range_num_obj: (10,25) 
 
   cubesats:
     included: True
@@ -62,7 +62,7 @@ space_targets:
     textures: ./asset/space_targets/cubesats/textures/one_side #Must be the directory to the one_side cubesat texture
 
   other_st:
-    included: False
+    included: True
     dir: ./asset/space_targets/other_st
     textures: ./asset/space_targets/other_st/textures
 

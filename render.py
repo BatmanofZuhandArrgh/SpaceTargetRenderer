@@ -18,6 +18,7 @@ from utils.bpy_utils import append_bpy_object, get_bpy_objnames, get_bpy_objname
             render_region
 
 from blender_objects.cubesat import CubeSat
+from blender_objects.other_ST import Other_ST
 from blender_objects.space_target_gen import SpaceTargetGenerator
 from blender_objects.background import BackgroundGenerator
 from blender_objects.camera import CameraGenerator
@@ -73,14 +74,20 @@ class RenderPipeline:
         self.cur_st_objs.clear() #Clear before populating with new objs
         for name in self.cur_st_obj_names:
 
-            if 'CubeSat' in name or 'OtherST' in name:
+            if 'CubeSat' in name :
                 self.cur_st_objs[name] = CubeSat(
                     obj_name=name,
                     img_coord=(0,0),
                     cam_coord=(0,0,0),
                     world_coord=(0,0,0)
                 )
-
+            elif 'OtherST' in name:
+                self.cur_st_objs[name] = Other_ST(
+                                obj_name=name,
+                                img_coord=(0,0),
+                                cam_coord=(0,0,0),
+                                world_coord=(0,0,0)
+                            )
             else:
                 raise ValueError('Unknown space target type or wrong naming convention')
 
@@ -143,9 +150,25 @@ class RenderPipeline:
 
             self.cur_st_objs[self.cur_st_obj_names[i]].update_bbox(self.intrinsic_mat, self.extrinsic_mat, img_size = self.img_size)
 
-
+        self.remove_bboxes_too_large()
         self.remove_overlapping_objs()
-        
+    
+    def remove_bboxes_too_large(self, percentage_of_full_img = 0.75):
+        bboxes = [self.cur_st_objs[name].bbox for name in self.cur_st_obj_names]
+        bbox_areas = [(bbox[1][1]- bbox[1][0]) * (bbox[0][1]- bbox[0][0]) for bbox in bboxes]
+        max_area = self.img_size[0] * self.img_size[1]
+
+        new_cur_st_obj_names = []
+
+        for index, name in enumerate(self.cur_st_obj_names):
+            if bbox_areas[index] > (percentage_of_full_img * max_area):
+                delete_bpy_object(name)
+                del self.cur_st_objs[name]
+                print('Remove big boy')
+            else: new_cur_st_obj_names.append(name)
+
+        self.cur_st_obj_names = new_cur_st_obj_names
+
     def remove_overlapping_objs(self, overlap_thres = 0.75):
         #Remove overlapping bboxes using an overlapping threshold for the smaller box
         bboxes = [self.cur_st_objs[name].bbox for name in self.cur_st_obj_names]
@@ -153,11 +176,13 @@ class RenderPipeline:
 
         new_cur_st_obj_names = [self.cur_st_obj_names[index] for index in picked_indices]
         removed_cur_st_obj_names = [name for name in self.cur_st_obj_names if name not in new_cur_st_obj_names]
-        
+                    
         # Delete all data about the obj, update in the data struct
         for name in removed_cur_st_obj_names:
             delete_bpy_object(name)
             del self.cur_st_objs[name]
+
+        print(f'Remove: {len(removed_cur_st_obj_names)} objects')
         self.cur_st_obj_names = new_cur_st_obj_names
         
     def delete_all_space_targets(self):
@@ -238,21 +263,52 @@ class RenderPipeline:
                         img_path = os.path.splitext(img_path)[0] + '0001.png'
                         cur_img = cv2.imread(img_path)
                         labels = []
+                        from pprint import pprint
+                        pprint(self.cur_st_objs)
+                        
                         for name in self.cur_st_obj_names:
+
+                            # Adjust bounding boxes for OtherST
+                            if 'OtherST' in name:
+                                print(self.cur_st_objs[name].bbox)
+                                otherST_box = cur_img[self.cur_st_objs[name].bbox[0][1]:self.cur_st_objs[name].bbox[1][1]-1, self.cur_st_objs[name].bbox[0][0]:self.cur_st_objs[name].bbox[1][0]-1]
+                                
+                                otherST_box = cv2.cvtColor(otherST_box, cv2.COLOR_BGR2GRAY) 
+                                ret, thresh = cv2.threshold(otherST_box, 1, 255, 0)
+                                #https://docs.opencv.org/3.4/d4/d73/tutorial_py_contours_begin.html
+                                contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+                                #https://docs.opencv.org/4.x/da/d0c/tutorial_bounding_rects_circles.html            
+
+                                if len(contours) != 0:
+                                    #Finding the largest contour
+                                    c = max(contours, key = cv2.contourArea)
+                                    bound_x,bound_y,bound_w,bound_h = cv2.boundingRect(c)                                
+                                    
+                                    '''
+                                    cur_img = cv2.rectangle(cur_img, \
+                                        (self.cur_st_objs[name].bbox[0][0] + int(bound_x), self.cur_st_objs[name].bbox[0][1] + int(bound_y)),\
+                                             (self.cur_st_objs[name].bbox[0][0] + int(bound_x + bound_w), self.cur_st_objs[name].bbox[0][1] + int(bound_y + bound_h) ),\
+                                                 color =(125,125, 125), thickness = 2)
+                                    '''
+                                    #Update bounding box for the object
+                                    self.cur_st_objs[name].bbox = ((self.cur_st_objs[name].bbox[0][0] + int(bound_x), self.cur_st_objs[name].bbox[0][1] + int(bound_y)), \
+                                        (self.cur_st_objs[name].bbox[0][0] + int(bound_x + bound_w), self.cur_st_objs[name].bbox[0][1] + int(bound_y + bound_h) ))
+
+                            #Convert to yolo format
                             center_coord = self.cur_st_objs[name].img_coord
                             bbox_width = self.cur_st_objs[name].bbox[1][0] - self.cur_st_objs[name].bbox[0][0]
                             bbox_height = self.cur_st_objs[name].bbox[1][1] - self.cur_st_objs[name].bbox[0][1]
                             
-                            '''
                             #Drawing bounding boxes
                             cv2.circle(cur_img, (center_coord[0], center_coord[1]), radius=2, color=(0,0, 255), thickness=2)
                             for coord in self.cur_st_objs[name].vertices_coords_img:
                                 cv2.circle(cur_img, coord, radius=2, color=(0,0, 255), thickness=1)
-                                cur_img = cv2.putText(cur_img, str(coord[0])+'-'+str(coord[1]), coord, cv2.FONT_HERSHEY_SIMPLEX, 
-                                                                    0.5, (255,0,0), 1, cv2.LINE_AA)
+                                # cur_img = cv2.putText(cur_img, str(coord[0])+'-'+str(coord[1]), coord, cv2.FONT_HERSHEY_SIMPLEX, 
+                                                                    # 0.5, (255,0,0), 1, cv2.LINE_AA)
 
                             cur_img = cv2.rectangle(cur_img, self.cur_st_objs[name].bbox[0], self.cur_st_objs[name].bbox[1], color =(255,0, 0), thickness = 2)
-                            '''
+                            
 
                             label = [
                                 str(self.label_dict[self.cur_st_objs[name].cls_type]), 

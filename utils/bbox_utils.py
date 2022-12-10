@@ -95,7 +95,7 @@ def nms(bboxes, overlap_thres = 0.75):
             
             smaller_box_index = 0 if areas[0] < areas[1] else 1 #The box larger
             #For the smaller box
-            smaller_overlap_ratio = intersection_area/areas[smaller_box_index]
+            smaller_overlap_ratio = intersection_area/(areas[smaller_box_index] + 1e-8)
                         
             if smaller_overlap_ratio > overlap_thres:
                 break

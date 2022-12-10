@@ -195,9 +195,9 @@ def count_bpy_object_bysubstring(substring = 'st_'):
     obj_names = get_bpy_objnames()
     return len([name for name in obj_names if substring.lower() in name.lower()]) 
 
-def set_bpy_obj_origin(obj_name, centering_mode = "ORIGIN_GEOMETRY"):
+def set_bpy_obj_origin(obj_name, centering_mode = "ORIGIN_GEOMETRY", center = 'BOUNDS'):
     select_bpy_object(obj_name)
-    bpy.ops.object.origin_set(type=centering_mode)
+    bpy.ops.object.origin_set(type=centering_mode, center = center)
     deselect_bpy_object()
 
 def render_region():

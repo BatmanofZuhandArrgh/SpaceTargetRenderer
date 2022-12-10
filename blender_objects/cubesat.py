@@ -1,7 +1,7 @@
 import numpy as np
 
 from blender_objects.space_target import SpaceTarget
-from utils.math_utils import get_rotation_mat
+from utils.math_utils import get_rotation_mat, clamp
 
 #For the moment, to map bounding box, this flow works with both CubeSat and Other_SpaceTargets
 # It will output not tight, but good enough bounding box for other st
@@ -24,7 +24,7 @@ class CubeSat(SpaceTarget):
             [-1,1,-1],
             [-1,-1,-1],
         ]
-        self.vertices_coords_world_trivial = [ver* world_abs_vertex_coord for ver in world_vertix_multiplier] #world coords of vertices when it's trivial
+        self.vertices_coords_world_trivial = [ver* world_abs_vertex_coord for ver in world_vertix_multiplier] #world coords of vertices when it's trivial, in object coordinates
         self.vertices_coords_world = None #world coords of vertices when taken into account rotation and translation in rendering (after self.update())
         self.vertices_coords_img   = None #img coords of vertices when transformed with camera matrices (after self.update_vertices())
 
@@ -45,6 +45,11 @@ class CubeSat(SpaceTarget):
         self.update_vertices(cam_intrinsic_mat, cam_extrinsic_mat)
         xs = [ver[0] for ver in self.vertices_coords_img]
         ys = [ver[1] for ver in self.vertices_coords_img]
-        upper_left = ( max(0, min(xs)), max(0, min(ys)))
-        bottom_right = ( min(img_width - 1, max(xs)), min(img_height - 1, max(ys)))
+
+        #Clamp
+        xs = [clamp(0, x, img_width-1) for x in xs]
+        ys = [clamp(0, y, img_height-1) for y in ys]
+        upper_left = (min(xs),  min(ys))
+        bottom_right = (max(xs), max(ys))
+
         self.bbox = (upper_left, bottom_right)

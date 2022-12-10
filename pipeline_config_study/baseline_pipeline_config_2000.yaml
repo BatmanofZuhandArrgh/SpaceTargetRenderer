@@ -72,6 +72,6 @@ space_targets:
     textures: ./asset/space_targets/other/textures
 
 operation_config:
-  num_cycle: 63
+  num_cycle: 500
   num_iter_per_cycle: 2
   num_view_per_iter: 2

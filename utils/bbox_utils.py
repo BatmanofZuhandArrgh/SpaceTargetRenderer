@@ -148,3 +148,8 @@ if __name__ == '__main__':
     cv2.imshow('Original', org)
     cv2.imshow('NMS', image)
     cv2.waitKey(0)
+
+def is_point_in_box(point, bbox):
+    upper_left, bottom_right = bbox
+    return point[0] >= upper_left[0] and point[1] >= upper_left[1] and \
+        point[0] <= bottom_right[0] and point[1] <= bottom_right[1]

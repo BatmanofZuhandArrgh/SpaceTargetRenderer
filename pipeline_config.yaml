@@ -52,7 +52,7 @@ space_targets:
   range_num_obj: (10,25) 
 
   cubesats:
-    included: True
+    included: False
     1U: ./asset/space_targets/cubesats/cubesat_1U.blend
     2U: ./asset/space_targets/cubesats/cubesat_2U.blend
     3U: ./asset/space_targets/cubesats/cubesat_3U.blend

@@ -8,7 +8,7 @@ import cv2
 import time
 
 from utils.utils import get_yaml
-from utils.bbox_utils import nms
+from utils.bbox_utils import nms, is_point_in_box
 from utils.math_utils import * 
 from utils.bpy_utils import append_bpy_object, get_bpy_objnames, get_bpy_objnames_by_substring, \
     random_rotate_bpy_object, show_bpy_objects,\
@@ -149,22 +149,23 @@ class RenderPipeline:
             )
 
             self.cur_st_objs[self.cur_st_obj_names[i]].update_bbox(self.intrinsic_mat, self.extrinsic_mat, img_size = self.img_size)
-
-        self.remove_bboxes_too_large()
+        
+        self.remove_bboxes_too_extreme()
         self.remove_overlapping_objs()
     
-    def remove_bboxes_too_large(self, percentage_of_full_img = 0.75):
+    def remove_bboxes_too_extreme(self, percentage_of_full_img = 0.75):
+        #Removing bboxes too large or small
         bboxes = [self.cur_st_objs[name].bbox for name in self.cur_st_obj_names]
-        bbox_areas = [(bbox[1][1]- bbox[1][0]) * (bbox[0][1]- bbox[0][0]) for bbox in bboxes]
+        bbox_areas = [(bbox[1][0]- bbox[0][0]) * (bbox[1][1]- bbox[0][1]) for bbox in bboxes]
         max_area = self.img_size[0] * self.img_size[1]
 
         new_cur_st_obj_names = []
 
         for index, name in enumerate(self.cur_st_obj_names):
-            if bbox_areas[index] > (percentage_of_full_img * max_area):
+            if bbox_areas[index] > (percentage_of_full_img * max_area) or bbox_areas[index] < 10 or \
+                not is_point_in_box(self.cur_st_objs[name].img_coord,self.cur_st_objs[name].bbox):
                 delete_bpy_object(name)
                 del self.cur_st_objs[name]
-                print('Remove big boy')
             else: new_cur_st_obj_names.append(name)
 
         self.cur_st_obj_names = new_cur_st_obj_names
@@ -292,8 +293,11 @@ class RenderPipeline:
                                                  color =(125,125, 125), thickness = 2)
                                     '''
                                     #Update bounding box for the object
-                                    self.cur_st_objs[name].bbox = ((self.cur_st_objs[name].bbox[0][0] + int(bound_x), self.cur_st_objs[name].bbox[0][1] + int(bound_y)), \
+                                    proposed_new_bbox = ((self.cur_st_objs[name].bbox[0][0] + int(bound_x), self.cur_st_objs[name].bbox[0][1] + int(bound_y)), \
                                         (self.cur_st_objs[name].bbox[0][0] + int(bound_x + bound_w), self.cur_st_objs[name].bbox[0][1] + int(bound_y + bound_h) ))
+                                    
+                                    if is_point_in_box(self.cur_st_objs[name].img_coord, proposed_new_bbox):
+                                        self.cur_st_objs[name].bbox = proposed_new_bbox
 
                             #Convert to yolo format
                             center_coord = self.cur_st_objs[name].img_coord

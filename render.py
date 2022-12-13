@@ -219,7 +219,7 @@ class RenderPipeline:
             #For every cycle, create background, set up light and camera
             mode =  random.choice(self.modes)   
             # mode = 'empty_space_partial_earth' #_partial_earth'
-            mode = 'empty_space'
+            # mode = 'empty_space'
 
             #Create temp filepath to save blend file
             with tempfile.NamedTemporaryFile() as tmp_file:
@@ -242,7 +242,7 @@ class RenderPipeline:
 
                     for view in range(self.operational_config['num_view_per_iter']):            
                         #For every view, space targets are repositioned and rotates.
-                        self.camera_rotating(mode) #TODO Uncomment this
+                        self.camera_rotating(mode) 
                         self.space_target_rotating()
                         self.space_target_positioning()  
                         self.space_target_updating()
@@ -264,14 +264,11 @@ class RenderPipeline:
                         img_path = os.path.splitext(img_path)[0] + '0001.png'
                         cur_img = cv2.imread(img_path)
                         labels = []
-                        from pprint import pprint
-                        pprint(self.cur_st_objs)
                         
                         for name in self.cur_st_obj_names:
 
                             # Adjust bounding boxes for OtherST
                             if 'OtherST' in name:
-                                print(self.cur_st_objs[name].bbox)
                                 otherST_box = cur_img[self.cur_st_objs[name].bbox[0][1]:self.cur_st_objs[name].bbox[1][1]-1, self.cur_st_objs[name].bbox[0][0]:self.cur_st_objs[name].bbox[1][0]-1]
                                 
                                 otherST_box = cv2.cvtColor(otherST_box, cv2.COLOR_BGR2GRAY) 
@@ -304,6 +301,7 @@ class RenderPipeline:
                             bbox_width = self.cur_st_objs[name].bbox[1][0] - self.cur_st_objs[name].bbox[0][0]
                             bbox_height = self.cur_st_objs[name].bbox[1][1] - self.cur_st_objs[name].bbox[0][1]
                             
+                            '''
                             #Drawing bounding boxes
                             cv2.circle(cur_img, (center_coord[0], center_coord[1]), radius=2, color=(0,0, 255), thickness=2)
                             for coord in self.cur_st_objs[name].vertices_coords_img:
@@ -312,7 +310,7 @@ class RenderPipeline:
                                                                     # 0.5, (255,0,0), 1, cv2.LINE_AA)
 
                             cur_img = cv2.rectangle(cur_img, self.cur_st_objs[name].bbox[0], self.cur_st_objs[name].bbox[1], color =(255,0, 0), thickness = 2)
-                            
+                            '''
 
                             label = [
                                 str(self.label_dict[self.cur_st_objs[name].cls_type]), 

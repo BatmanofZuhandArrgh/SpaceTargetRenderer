@@ -8,7 +8,7 @@ from ast import literal_eval
 from utils.math_utils import get_random_point_on_3dpolygon, get_random_point_on_3dline, get_random_point_on_sphere, \
     get_random_point_within_intersecting_tangent_circle_between_point_n_sphere, get_random_tangent_point_between_point_n_sphere
 from utils.bpy_utils import get_calibration_matrix_K_from_blender, get_4x4_RT_matrix_from_blender, get_rotation_euler_bpy_object, \
-    get_cam_angle_to_look_at, deselect_bpy_object, set_dof_distance
+    get_cam_angle_to_look_at, deselect_bpy_object, set_dof_distance, get_dof_distance
 from utils.utils import get_yaml
 
 np.set_printoptions(suppress=True)
@@ -168,9 +168,11 @@ class CameraGenerator():
 
         else:
             raise ValueError(f'Not a valid creation mode {creation_mode}')
-        
+
         #Set depth of view to capture the furthest space target
-        set_dof_distance(self.camera_name, self.st_range['depth'][-1] + 10) #Extra 10 meters
+        #Already at automatically adjusted by the depth of space targets. 
+        # 10000 meters with Earth, 1000 with empty_space
+        # set_dof_distance(self.camera_name, self.st_range['depth'][-1] + 90000) #Extra 10 meters
         self.set_camera_matrices()
 
     def get_cam_location(self):

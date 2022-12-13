@@ -110,7 +110,11 @@ if __name__ == '__main__':
     image_name = 'basic_function_testing/test_basic_func.png0001.png'
 
     # Bounding boxes
-    bounding_boxes = [((187, 82), (337, 317)), ((150, 67), (305, 282)), ((246, 121), (368, 304))]
+    bounding_boxes = [((187, 82), (337, 317)),\
+         ((150, 67), (305, 282)), \
+            ((246, 121), (368, 304)),\
+                ((300, 280), (337, 317))
+                ]
     # confidence_score = [0.9, 0.75, 0.8]
 
     # Read image

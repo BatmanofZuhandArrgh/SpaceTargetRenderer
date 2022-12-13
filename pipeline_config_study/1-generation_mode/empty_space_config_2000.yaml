@@ -39,9 +39,9 @@ light:
 camera:
   camera_name: Camera
   space_target_range:
-    depth: (8, 100) #From the axis of the camera
-    horizontal_dist: (2.5, 36)   #Horizontal distance from the axis of the camera
-    vertical_dist: (1, 20)
+    depth: (10, 300) #From the axis of the camera
+    horizontal_dist: (3.5, 107)   #Horizontal distance from the axis of the camera
+    vertical_dist: (2, 60)
 
   cam2earth_range:
     distance: (900, 1800)

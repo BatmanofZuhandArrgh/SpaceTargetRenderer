@@ -9,6 +9,23 @@ from mathutils import Vector
 
 from math_utils import get_random_rotation_offset
 
+def set_dof_distance(camera_name, distance):
+    '''
+    Set the depth of distance of the camera
+    '''
+    select_bpy_object(camera_name)
+    bpy.context.object.data.clip_end = distance
+    deselect_bpy_object()
+
+def get_dof_distance(camera_name):
+    '''
+    Return depth of distance in meter
+    '''
+    select_bpy_object(camera_name)
+    distance = bpy.context.object.data.clip_end
+    deselect_bpy_object()
+    return distance
+    
 def set_render_img_size(img_size: tuple):
     r = bpy.context.scene.render
     r.resolution_x = img_size[0]

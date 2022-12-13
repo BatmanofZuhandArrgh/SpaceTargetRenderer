@@ -219,7 +219,7 @@ class RenderPipeline:
             #For every cycle, create background, set up light and camera
             mode =  random.choice(self.modes)   
             # mode = 'empty_space_partial_earth' #_partial_earth'
-            # mode = 'empty_space'
+            mode = 'empty_space'
 
             #Create temp filepath to save blend file
             with tempfile.NamedTemporaryFile() as tmp_file:

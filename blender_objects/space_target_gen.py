@@ -73,7 +73,7 @@ class SpaceTargetGenerator():
             img = np.random.normal(0,255,(640,640,3))
         else: #90% of getting random solid color
             out_img_path = os.path.join(texture_dir, 'random_color.jpg')
-            img = get_solid_color_img(color=get_random_color())
+            img = get_solid_color_img(color=get_random_color(too_dark_sum_threshold=20))
         
         cv2.imwrite(img = img, filename=out_img_path)
         return out_img_path

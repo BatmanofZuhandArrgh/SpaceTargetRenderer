@@ -6,7 +6,8 @@ from utils.utils import get_yaml, dump_yaml
 
 def main():
 
-    config_paths = glob.glob('./pipeline_config_study/**/*.yaml', recursive=True)
+    config_paths = glob.glob('./pipeline_config_study/3-subclass/**/only_1U3UST*.yaml', recursive=True)
+
     for config_path in config_paths:
         print(config_path)
         pipeline = RenderPipeline(config_path=config_path)

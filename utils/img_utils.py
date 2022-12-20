@@ -38,7 +38,7 @@ def stitching_upwrapped_texture(single_side_texture_path, obj_type, output_path)
     
     if bool(random.getrandbits(1)): #50% chance of getting borders
         # print('GGGGGGGGGGGetting borders')
-        border_color = get_random_color(too_dark_sum_threshold= 10)
+        border_color = get_random_color(too_dark_sum_threshold= 50)
         single_side = get_border_square(single_side, border_color) 
 
     #Cut a square out of the original single side image, if it's not already a square

@@ -1,0 +1,77 @@
+blender_exe: ../../Downloads/blender-2.82-linux64/blender
+blender_engine: BLENDER_EEVEE
+output_dir: ../synthetic_dataset/official20000_dataset/val
+label_dict: ./annotation/OBJ_CLS.yaml
+WIP_blend_file_path:
+
+img_size: (640,480)
+
+modes: 
+  - empty_space
+  - empty_space_partial_earth
+  - full_earth
+  
+background:
+  assets:
+    earth_blend:
+      dir: ./asset/background/earth
+      import_object: Earth
+      import_blend:  ./asset/background/earth/planet_earth_v2.blend
+      earth_texture: ./asset/background/earth/earth_texture
+      cloud_texture: ./asset/background/earth/cloud_texture
+      creation_mode: import
+
+    ## Depreciated
+    # sky_blend:
+    #   dir: ./asset/background/
+    #   import_blend:
+    #   sky_texture: ./asset/background/sky/sky_texture
+    #   creation_mode: create
+
+light:
+  light_name: Sun
+  specify_config: False
+  type: SUN
+  angle: 0
+  strength: 100
+  location: (4,1,6)
+  rotation: (0,0,0)
+  radius: 1
+
+camera:
+  camera_name: Camera
+  space_target_range:
+    depth: (10, 300) #From the axis of the camera
+    horizontal_dist: (3.5, 107)   #Horizontal distance from the axis of the camera
+    vertical_dist: (2, 60)
+
+  cam2earth_range:
+    distance: (900, 1800)
+
+space_targets:
+  range_num_obj: (15,35) 
+
+  cubesats:
+    included: True
+    1U: ./asset/space_targets/cubesats/cubesat_1U.blend
+    2U: ./asset/space_targets/cubesats/cubesat_2U.blend
+    3U: ./asset/space_targets/cubesats/cubesat_3U.blend
+    4U: ./asset/space_targets/cubesats/cubesat_4U.blend
+    6U: ./asset/space_targets/cubesats/cubesat_6U.blend
+    12U: ./asset/space_targets/cubesats/cubesat_12U.blend 
+    textures: ./asset/space_targets/cubesats/textures/one_side #Must be the directory to the one_side cubesat texture
+
+  other_st:
+    included: True
+    dir: ./asset/space_targets/other_st
+    textures: ./asset/space_targets/other_st/textures
+
+  other:
+    included: False
+    dir: ./asset/space_targets/other
+    textures: ./asset/space_targets/other/textures
+
+operation_config:
+  num_cycle: 620
+  num_iter_per_cycle: 2
+  num_view_per_iter: 2

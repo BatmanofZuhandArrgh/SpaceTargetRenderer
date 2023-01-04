@@ -1,6 +1,6 @@
 blender_exe: ../../Downloads/blender-2.82-linux64/blender
 blender_engine: BLENDER_EEVEE
-output_dir: ./sample/output/
+output_dir: ../synthetic_dataset/1U3U_tuned2000_dataset/train
 label_dict: ./annotation/OBJ_CLS.yaml
 WIP_blend_file_path:
 
@@ -50,7 +50,7 @@ camera:
     distance: (900, 1800)
 
 space_targets:
-  range_num_obj: (10,25) 
+  range_num_obj: (15,35) 
 
   cubesats:
     included: True
@@ -73,6 +73,6 @@ space_targets:
     textures: ./asset/space_targets/other/textures
 
 operation_config:
-  num_cycle: 25
+  num_cycle: 500
   num_iter_per_cycle: 2
   num_view_per_iter: 2

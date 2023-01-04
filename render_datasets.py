@@ -6,7 +6,7 @@ from utils.utils import get_yaml, dump_yaml
 
 def main():
 
-    config_paths = glob.glob('./pipeline_config_study/official_dataset/*.yaml', recursive=True)
+    config_paths = glob.glob('./pipeline_config_study/*tuned_dataset*/*.yaml', recursive=True)
 
     for config_path in config_paths:
         print(config_path)

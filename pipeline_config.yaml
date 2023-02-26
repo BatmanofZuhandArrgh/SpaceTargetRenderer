@@ -44,7 +44,7 @@ camera:
     depth: (10, 300) #From the axis of the camera
     horizontal_dist: (2, 105)   #Horizontal distance from the axis of the camera
     vertical_dist: (1, 58)
-#Other set of lims: (100, 36, 20) (200, 70, 40) (300, 107, 60)
+#Other set of lims: (max_depth, (100, 36, 20) (200, 70, 40) (300, 107, 60)
 
   cam2earth_range:  
     distance: (900, 1800)
@@ -55,11 +55,11 @@ space_targets:
   cubesats:
     included: True
     1U: ./asset/space_targets/cubesats/cubesat_1U.blend
-    # 2U: ./asset/space_targets/cubesats/cubesat_2U.blend
+    2U: ./asset/space_targets/cubesats/cubesat_2U.blend
     3U: ./asset/space_targets/cubesats/cubesat_3U.blend
-    # 4U: ./asset/space_targets/cubesats/cubesat_4U.blend
-    # 6U: ./asset/space_targets/cubesats/cubesat_6U.blend
-    # 12U: ./asset/space_targets/cubesats/cubesat_12U.blend 
+    4U: ./asset/space_targets/cubesats/cubesat_4U.blend
+    6U: ./asset/space_targets/cubesats/cubesat_6U.blend
+    12U: ./asset/space_targets/cubesats/cubesat_12U.blend 
     textures: ./asset/space_targets/cubesats/textures/one_side #Must be the directory to the one_side cubesat texture
 
   other_st:

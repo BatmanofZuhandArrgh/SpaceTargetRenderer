@@ -5,7 +5,7 @@ def get_yaml(config_path):
         try:
             config_dict = yaml.safe_load(stream)
         except yaml.YAMLError as exc:
-            print(exc)
+            print('yamlerror', exc)
     return config_dict
 
 def dump_yaml(output_path):

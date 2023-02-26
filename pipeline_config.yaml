@@ -8,8 +8,8 @@ img_size: (640,480)
 
 modes: 
   - empty_space_partial_earth
-  # - empty_space
-  # - full_earth
+  - empty_space
+  - full_earth
   
 background:
   assets:

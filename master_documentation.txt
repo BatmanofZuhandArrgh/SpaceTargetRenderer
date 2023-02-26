@@ -23,7 +23,7 @@ We hope to collect space images of cubesats first, and then images of all space 
 - Moons, planets and stars, if exist, are considered part of the background, and not labelled.
 
 * Challenges:
-- There are a considerable lack of diversity in the cubesat types captured in the photos. Most are 1Us and 3Us (#TODO insert test set statistics here)  
+- There are a considerable lack of diversity in the cubesat types captured in the photos. Most are 1Us and 3Us (for test set statistics, please see paper.pdf)  
 - A lot of of cubesats have solar panels as their outside texture. Using these as part of the test set will lead us to not being able to prove the robustness of the model.
 - Some of the sequences collected are of cubesats being rejected from their deployment (tunnel?). The long cubesats will visually look like 1U, 2U, 3U,... as they are ejected from the platform.
 - A lot of cubesats consist of solar panel "wings" which visually makes them look like having more cubes than they actually do.
@@ -32,9 +32,7 @@ We hope to collect space images of cubesats first, and then images of all space 
 III. Data synthesization:
 - We're hoping to synthesize a dataset that resembles realistic conditions the most.
 - For synthesization for computer vision task, people have uses a multitude of tools like openGL, Unreal Engine, Blender, GTA5,... We choose to use Blender for its versatility and Eevee rendering enginer for its real-time speed.
-- According to the (#TODO insert papers and datasets' names), designing a dataset for object detection. Images should contain 5-20 objects (cubesats and others)
 - Unlike other synthetic dataset, we strive to simulate the background, lighting and texture of the objects as best we can. (Other only contains empty-texture cad models of objects and single colored background.
-- Number of images: (#TODO ponder upon this)
 
 * Pipeline: the pipeline uses Blender Python API to render
 The yaml file will prove information to the process of runing the pipeline:
@@ -57,26 +55,4 @@ split 90/10 from the set for validation and 10000 images for synthesize testing.
 First we generate fully synthesized test set with full variety, randomized all lighting, camera, space targets and background conditions
 The purpose is for later researcher to understand which condition customization is needed for training a generalized model, and which is not needed.
 For faster training for this study, we will use a relatively small and quickly-trained model. Then once we have found the best training condition, we will use a large model and compare model architectures.
-1. Generation mode
-- Empty space vs. Partial and Full Earth
-- A dataset of 2000 images
-- Generating the Earth is a huge computational overhead. So if we could just 
-
-2. Number of cubesats
-- Most realistic images of cubesats in real life only have 1 or maximum 6 or 7 cubesats. In the object detection image synthesization from GTA paper, it created 20-30 objects.
-- We want to test which creates a better detection model, closed to real life or create a hard scenario with a lot of occlusion for the model. Also generating more objects create more computational overhead
-- 1-6 cubesats/space targets vs 20-30 cubesats/space targets
-- A dataset of 2000 images 
-
-3. Effect of space target textures
-- No texture (simple color) (plain grey albedo) vs various texture 
-
-4. Number of images to trained on
-- 2000, 10000, 100000
-
-5. Other generation conditions:
-- lighting strength
-- image synthesize
-Test yolov7 between 
-IV. Domain adaptation
 

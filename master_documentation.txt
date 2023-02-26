@@ -56,3 +56,9 @@ First we generate fully synthesized test set with full variety, randomized all l
 The purpose is for later researcher to understand which condition customization is needed for training a generalized model, and which is not needed.
 For faster training for this study, we will use a relatively small and quickly-trained model. Then once we have found the best training condition, we will use a large model and compare model architectures.
 
+
+#TODO next
+- Other Space Target (Other_ST) bounding box are not tight due to the nature of blender and the nature of lighting. 
+So to create tighter bounding boxes, clustering can be used to segment the object before finalize the bounding box.
+
+- Randomizing the texture color can be improved to produced more distinct colors, not just mild ones.
